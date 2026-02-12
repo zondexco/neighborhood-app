@@ -25,24 +25,30 @@ export default function TabLayout() {
         tabBarPosition: hasSidebar ? 'left' : 'bottom',
         tabBarStyle: {
           position: hasSidebar ? 'relative' : 'absolute',
-          bottom: hasSidebar ? undefined : 0,
-          left: hasSidebar ? undefined : 0,
-          right: hasSidebar ? undefined : 0,
+          left: hasSidebar ? undefined : 16,
+          right: hasSidebar ? undefined : 16,
+          bottom: hasSidebar ? undefined : Platform.OS === 'ios' ? 18 : 12,
           width: hasSidebar ? 250 : undefined,
-          height: hasSidebar ? '100%' : 85,
-          borderTopWidth: hasSidebar ? 0 : 0,
+          height: hasSidebar ? '100%' : 76,
+          borderTopWidth: 0,
           borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: 'rgba(255,255,255,0.08)',
-          backgroundColor: hasSidebar ? '#0a0a0a' : Platform.OS === 'ios' ? 'transparent' : 'rgba(0,0,0,0.8)',
+          borderRadius: hasSidebar ? 0 : 26,
+          overflow: hasSidebar ? 'visible' : 'hidden',
+          backgroundColor: hasSidebar ? '#0a0a0a' : 'transparent',
           elevation: 0,
           paddingTop: hasSidebar ? 16 : 0,
+          shadowColor: hasSidebar ? undefined : '#000',
+          shadowOpacity: hasSidebar ? undefined : 0.2,
+          shadowRadius: hasSidebar ? undefined : 24,
+          shadowOffset: hasSidebar ? undefined : { width: 0, height: 12 },
         },
         tabBarBackground: () => (
           Platform.OS === 'ios' && !hasSidebar ? (
             <LiquidView 
-              intensity={80} 
-              tint="dark" 
-              className="absolute inset-0 border-t border-white/10"
+              intensity={95}
+              tint="systemChromeMaterialDark"
+              className="absolute inset-0 border border-white/15 rounded-[26px]"
             />
           ) : undefined
         ),
@@ -50,6 +56,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: hasSidebar ? 14 : 12,
           fontWeight: '600',
+          marginBottom: hasSidebar ? 0 : 6,
         },
         tabBarItemStyle: hasSidebar
           ? {
@@ -58,17 +65,27 @@ export default function TabLayout() {
               marginBottom: 8,
               paddingVertical: 6,
             }
-          : undefined,
-        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : undefined,
+          : {
+              borderRadius: 18,
+              marginHorizontal: 4,
+              marginVertical: 8,
+            },
+        tabBarIconStyle: {
+          marginTop: hasSidebar ? 0 : 4,
+        },
+        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)',
         tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: '#666666',
+        tabBarInactiveTintColor: '#a1a1aa',
+        sceneStyle: {
+          backgroundColor: '#000000',
+        },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => <Home color={color} size={24} />,
+          tabBarIcon: ({ color }) => <Home color={color} size={22} />,
           headerShown: false,
         }}
       />
@@ -76,7 +93,7 @@ export default function TabLayout() {
         name="reservations"
         options={{
           title: 'Reservas',
-          tabBarIcon: ({ color }) => <Calendar color={color} size={24} />,
+          tabBarIcon: ({ color }) => <Calendar color={color} size={22} />,
           headerShown: false,
         }}
       />
@@ -84,7 +101,7 @@ export default function TabLayout() {
         name="packages"
         options={{
           title: 'Paquetería',
-          tabBarIcon: ({ color }) => <Package color={color} size={24} />,
+          tabBarIcon: ({ color }) => <Package color={color} size={22} />,
           headerShown: false,
         }}
       />
@@ -92,7 +109,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color }) => <User color={color} size={24} />,
+          tabBarIcon: ({ color }) => <User color={color} size={22} />,
           headerShown: false,
         }}
       />

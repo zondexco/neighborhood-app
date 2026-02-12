@@ -15,9 +15,10 @@ export default function LoginEmailScreen() {
   const setEmailTemp = useAuth(state => state.setEmailTemp);
   const { width } = useWindowDimensions();
   const isLaptop = width >= Breakpoints.laptop;
+  const emailTrim = email.trim();
+  const canContinue = emailTrim.length > 3;
 
   const handleNext = () => {
-    const emailTrim = email.trim();
     // Validación más estricta de regex para evitar error 400 del backend
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
@@ -84,12 +85,12 @@ export default function LoginEmailScreen() {
 
               <View className="mt-8 flex-row justify-end">
                 <TouchableOpacity 
-                  className={`h-14 px-8 rounded-full items-center justify-center flex-row ${email.length > 5 ? 'bg-white' : 'bg-neutral-800'}`}
+                  className={`h-14 px-8 rounded-full items-center justify-center flex-row ${canContinue ? 'bg-white' : 'bg-neutral-800'}`}
                   onPress={handleNext}
-                  disabled={email.length < 5}
+                  disabled={!canContinue}
                 >
-                  <Text className={`font-bold text-lg mr-2 ${email.length > 5 ? 'text-black' : 'text-neutral-500'}`}>Continuar</Text>
-                  <ArrowRight color={email.length > 5 ? 'black' : '#525252'} size={20} />
+                  <Text className={`font-bold text-lg mr-2 ${canContinue ? 'text-black' : 'text-neutral-500'}`}>Continuar</Text>
+                  <ArrowRight color={canContinue ? 'black' : '#525252'} size={20} />
                 </TouchableOpacity>
               </View>
             </LiquidView>

@@ -12,9 +12,8 @@ interface LiquidViewProps extends ViewProps {
 
 /**
  * LiquidView provides a "Glassmorphism" effect.
- * iOS: Uses native standard Blur (via expo-blur which maps to UIVisualEffectView).
- * Android: Simulates glass with translucent background.
- * Web: Uses CSS backdrop-filter.
+ * iOS: Uses native liquid/blur effects.
+ * Android/Web: Uses simple translucent fallback (no liquid glass effect).
  */
 export const LiquidView: React.FC<LiquidViewProps> = ({ 
   children, 
@@ -22,6 +21,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
   tint = 'default',
   style,
   className,
+  pointerEvents,
   ...props 
 }) => {
 
@@ -31,10 +31,24 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
         style={[styles.overflowHidden, style]}
         glassEffectStyle="regular"
         className={className}
+        pointerEvents={pointerEvents ?? 'box-none'}
         {...props}
       >
         {children}
       </GlassView>
+    );
+  }
+
+  if (Platform.OS === 'web') {
+    return (
+      <View
+        style={[styles.webGlass, style]}
+        className={cn('bg-black/70 border border-white/10', className)}
+        pointerEvents={pointerEvents ?? 'box-none'}
+        {...props}
+      >
+        {children}
+      </View>
     );
   }
   
@@ -47,7 +61,8 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
           styles.androidGlass, 
           style
         ]} 
-        className={cn("bg-white/80 dark:bg-black/60 border border-white/20", className)}
+        className={cn("bg-black/65 border border-white/15", className)}
+        pointerEvents={pointerEvents ?? 'box-none'}
         {...props}
       >
         {children}
@@ -55,13 +70,14 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
     );
   }
 
-  // iOS & Web (Expo Blur supports web mostly)
+  // iOS fallback if GlassView API isn't available.
   return (
     <BlurView 
       intensity={intensity} 
       tint={tint} 
       style={[styles.overflowHidden, style]}
       className={className}
+      pointerEvents={pointerEvents ?? 'box-none'}
       {...props}
     >
       {children}
@@ -74,9 +90,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   androidGlass: {
-    // Basic fallback styles if Tailwind isn't loaded yet
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(10, 10, 10, 0.65)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     borderWidth: 1,
+  },
+  webGlass: {
+    overflow: 'hidden',
   }
 });
