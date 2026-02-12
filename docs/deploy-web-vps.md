@@ -22,6 +22,11 @@ Opcional:
 
 - `VPS_WEB_ROOT` (ruta destino, default: `/var/www/neighborhood-app`)
 
+Notas importantes sobre ruta:
+
+- Si defines `VPS_WEB_ROOT=/var/www/neighborhood-app`, el workflow publica en `/var/www/neighborhood-app/dist`.
+- Si defines `VPS_WEB_ROOT=/var/www/neighborhood-app/dist`, también funciona (evita `dist/dist`).
+
 ## Qué publica
 
 - Ejecuta `bun run build:web` (export estático a `dist`)

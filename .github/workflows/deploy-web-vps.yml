@@ -86,8 +86,19 @@ jobs:
             if [ -z "$WEB_ROOT" ]; then
               WEB_ROOT="/var/www/neighborhood-app"
             fi
-            sudo mkdir -p "$WEB_ROOT"
-            sudo tar -xzf /tmp/web-dist.tar.gz -C "$WEB_ROOT"
+
+            if [[ "$WEB_ROOT" == */dist ]]; then
+              TARGET_DIR="$WEB_ROOT"
+            else
+              TARGET_DIR="$WEB_ROOT/dist"
+            fi
+
+            sudo mkdir -p "$TARGET_DIR"
+            sudo rm -rf /tmp/dist
+            sudo tar -xzf /tmp/web-dist.tar.gz -C /tmp
+            sudo find "$TARGET_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo cp -a /tmp/dist/. "$TARGET_DIR"/
+            sudo rm -rf /tmp/dist
             sudo rm -f /tmp/web-dist.tar.gz
 
       - name: Deploy web on VPS (password)
@@ -104,6 +115,17 @@ jobs:
             if [ -z "$WEB_ROOT" ]; then
               WEB_ROOT="/var/www/neighborhood-app"
             fi
-            sudo mkdir -p "$WEB_ROOT"
-            sudo tar -xzf /tmp/web-dist.tar.gz -C "$WEB_ROOT"
+
+            if [[ "$WEB_ROOT" == */dist ]]; then
+              TARGET_DIR="$WEB_ROOT"
+            else
+              TARGET_DIR="$WEB_ROOT/dist"
+            fi
+
+            sudo mkdir -p "$TARGET_DIR"
+            sudo rm -rf /tmp/dist
+            sudo tar -xzf /tmp/web-dist.tar.gz -C /tmp
+            sudo find "$TARGET_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo cp -a /tmp/dist/. "$TARGET_DIR"/
+            sudo rm -rf /tmp/dist
             sudo rm -f /tmp/web-dist.tar.gz
