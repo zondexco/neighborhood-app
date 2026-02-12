@@ -1,189 +1,224 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, TextInput, KeyboardAvoidingView, Platform, Pressable, Alert, useWindowDimensions, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LiquidView } from '@/components/native/LiquidView';
 import { Mail, ArrowRight } from 'lucide-react-native';
-import { DomainSuggestions } from '@/components/ui/DomainSuggestions';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { Breakpoints } from '@/constants/theme';
-import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
 
 export default function LoginEmailScreen() {
   const [email, setEmail] = useState('');
-  const inputRef = useRef<TextInput>(null);
-  const setEmailTemp = useAuth(state => state.setEmailTemp);
-  const { width } = useWindowDimensions();
-  const isLaptop = width >= Breakpoints.laptop;
-  const useLiquid = Platform.OS === 'ios';
+  const setEmailTemp = useAuth((state) => state.setEmailTemp);
 
   const emailTrim = email.trim().toLowerCase();
-  const canContinue = EMAIL_REGEX.test(emailTrim);
+  const isValidEmail = EMAIL_REGEX.test(emailTrim);
 
-  const handleEmailChange = useCallback((value: string) => {
-    setEmail(value.replace(/\s/g, ''));
-  }, []);
+  const handleEmailChange = (text: string) => {
+    setEmail(text.replace(/\s/g, ''));
+  };
 
-  const handleNext = useCallback(() => {
-    if (!canContinue) {
-      Alert.alert('Email inválido', 'Por favor ingresa un correo electrónico válido (ej: usuario@dominio.com).');
+  const handleNext = () => {
+    if (!isValidEmail) {
+      Alert.alert(
+        'Email inválido',
+        'Por favor ingresa un correo electrónico válido (ej: usuario@dominio.com).',
+      );
       return;
     }
     setEmailTemp(emailTrim);
     router.push('/login-pin');
-  }, [canContinue, emailTrim, setEmailTemp]);
+  };
 
-  const handleDomainSelect = useCallback((domain: string) => {
-    const newEmail = email.includes('@')
-      ? email.split('@')[0] + domain
-      : email + domain;
-    setEmail(newEmail);
-    // Mantener foco en el input después de seleccionar dominio
-    setTimeout(() => inputRef.current?.focus(), 50);
-  }, [email]);
+  const handleDomainSelect = (domain: string) => {
+    const base = email.includes('@') ? email.split('@')[0] : email;
+    setEmail(base + domain);
+  };
 
-  // Componente del input reutilizado para ambas ramas (iOS / no-iOS)
-  const renderEmailInput = (isLiquid: boolean) => (
-    <View
-      className={`rounded-2xl border border-white/10 flex-row items-center px-4 ${isLiquid ? '' : 'bg-black/55'}`}
-      style={{ height: 64 }}
-    >
-      <Mail color="#A3A3A3" size={20} />
-      <TextInput
-        ref={inputRef}
-        placeholder="usuario@dominio.com"
-        placeholderTextColor="#666"
-        className="flex-1 ml-3"
-        style={{ color: '#FFFFFF', fontSize: 18, paddingVertical: 12 }}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="email"
-        textContentType="emailAddress"
-        inputMode="email"
-        value={email}
-        onChangeText={handleEmailChange}
-        onSubmitEditing={handleNext}
-        returnKeyType="next"
-        autoFocus
-      />
-    </View>
-  );
-
-  const renderForm = () => (
-    <>
-      <View className="mb-10">
-        <Text className="text-white text-4xl font-bold mb-3">Identifícate</Text>
-        <Text className="text-neutral-400 text-xl leading-8">
-          Ingresa tu correo para continuar con el inicio de sesión.
-        </Text>
-      </View>
-
-      <View className="gap-y-4">
-        {useLiquid ? (
-          <LiquidView intensity={20} tint="dark" className="rounded-2xl border border-white/10 flex-row items-center px-4" style={{ height: 64 }}>
-            <Mail color="#A3A3A3" size={20} />
-            <TextInput
-              ref={inputRef}
-              placeholder="usuario@dominio.com"
-              placeholderTextColor="#666"
-              className="flex-1 ml-3"
-              style={{ color: '#FFFFFF', fontSize: 18, paddingVertical: 12 }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
-              textContentType="emailAddress"
-              inputMode="email"
-              value={email}
-              onChangeText={handleEmailChange}
-              onSubmitEditing={handleNext}
-              returnKeyType="next"
-              autoFocus
-            />
-          </LiquidView>
-        ) : (
-          renderEmailInput(false)
-        )}
-
-        <DomainSuggestions email={email} onSelect={handleDomainSelect} />
-      </View>
-
-      <View className="mt-8 flex-row justify-end">
-        <Pressable
-          onPress={handleNext}
-          disabled={!canContinue}
-          style={({ pressed }) => [
-            {
-              height: 56,
-              paddingHorizontal: 32,
-              borderRadius: 9999,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: canContinue ? '#FFFFFF' : '#262626',
-            },
-            pressed && canContinue && { opacity: 0.85 },
-          ]}
-        >
-          <Text
-            style={{
-              fontWeight: '700',
-              fontSize: 18,
-              marginRight: 8,
-              color: canContinue ? '#000000' : '#737373',
-            }}
-          >
-            Continuar
-          </Text>
-          <ArrowRight color={canContinue ? '#000000' : '#525252'} size={20} />
-        </Pressable>
-      </View>
-    </>
-  );
+  // Filtrar dominios
+  const filteredDomains = !email.includes('@')
+    ? DOMAINS
+    : DOMAINS.filter((d) => {
+        const typed = '@' + (email.split('@')[1] || '');
+        return d.startsWith(typed) && d !== typed;
+      });
 
   return (
-    <View className="flex-1 bg-neutral-900">
+    <View style={s.screen}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      {/* Background Gradients */}
-      <View className="absolute bg-blue-600/30 rounded-full" style={{ width: 300, height: 300, top: -100, left: -50 }} />
+      <View style={s.container}>
+        <View style={s.card}>
+          {/* Header */}
+          <Text style={s.title}>Identifícate</Text>
+          <Text style={s.subtitle}>
+            Ingresa tu correo para continuar con el inicio de sesión.
+          </Text>
 
-      <SafeAreaView className="flex-1">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
-        >
-          {/* ScrollView con keyboardShouldPersistTaps para que los botones
-              de dominio y "Continuar" funcionen con el teclado abierto */}
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-            keyboardShouldPersistTaps="handled"
-            bounces={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <ResponsiveContainer maxWidth={560} className="justify-center">
-              {useLiquid ? (
-                <LiquidView
-                  intensity={isLaptop ? 25 : 15}
-                  tint="dark"
-                  className={`rounded-3xl border border-white/10 ${isLaptop ? 'px-8 py-10' : 'px-6 py-8'}`}
+          {/* Email Input */}
+          <View style={s.inputRow}>
+            <Mail color="#A3A3A3" size={20} />
+            <TextInput
+              placeholder="usuario@dominio.com"
+              placeholderTextColor="#666"
+              value={email}
+              onChangeText={handleEmailChange}
+              onSubmitEditing={handleNext}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+              style={s.textInput as any}
+            />
+          </View>
+
+          {/* Domain suggestions */}
+          {filteredDomains.length > 0 && (
+            <View style={s.chipsContainer}>
+              {filteredDomains.map((domain) => (
+                <Pressable
+                  key={domain}
+                  onPress={() => handleDomainSelect(domain)}
+                  style={({ pressed }) => [
+                    s.chip,
+                    pressed && s.chipPressed,
+                  ]}
                 >
-                  {renderForm()}
-                </LiquidView>
-              ) : (
-                <View className={`rounded-3xl border border-white/10 bg-black/65 ${isLaptop ? 'px-8 py-10' : 'px-6 py-8'}`}>
-                  {renderForm()}
-                </View>
-              )}
-            </ResponsiveContainer>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                  <Text style={s.chipText}>{domain}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          {/* Continue button */}
+          <View style={s.buttonRow}>
+            <Pressable
+              onPress={handleNext}
+              disabled={!isValidEmail}
+              style={({ pressed }) => [
+                s.continueBtn,
+                {
+                  backgroundColor: isValidEmail ? '#FFFFFF' : '#262626',
+                  opacity: pressed && isValidEmail ? 0.8 : 1,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  s.continueTxt,
+                  { color: isValidEmail ? '#000' : '#737373' },
+                ]}
+              >
+                Continuar
+              </Text>
+              <ArrowRight color={isValidEmail ? '#000' : '#525252'} size={20} />
+            </Pressable>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
+
+const s = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#171717',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 560,
+    padding: 32,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 36,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  subtitle: {
+    color: '#a3a3a3',
+    fontSize: 20,
+    lineHeight: 32,
+    marginBottom: 40,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    marginBottom: 16,
+  },
+  textInput: {
+    flex: 1,
+    marginLeft: 12,
+    color: '#FFFFFF',
+    fontSize: 18,
+    height: 48,
+    // @ts-ignore - web only
+    ...Platform.select({ web: { outlineStyle: 'none' } }),
+  },
+  chipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 24,
+  },
+  chip: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  chipPressed: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+  chipText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  continueBtn: {
+    height: 56,
+    paddingHorizontal: 32,
+    borderRadius: 9999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  continueTxt: {
+    fontWeight: '700',
+    fontSize: 18,
+    marginRight: 8,
+  },
+});
