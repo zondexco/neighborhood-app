@@ -12,6 +12,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -28,11 +30,11 @@ jobs:
           node-version: 20
 
       - name: Setup Expo and EAS
-        if: github.ref_name == 'develop' && secrets.EXPO_TOKEN != ''
+        if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          token: ${{ env.EXPO_TOKEN }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -47,14 +49,14 @@ jobs:
         run: tar -czf web-dist.tar.gz dist
 
       - name: Build Android APK (EAS)
-        if: github.ref_name == 'develop' && secrets.EXPO_TOKEN != ''
+        if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
         id: eas_build
         run: |
           bunx eas build --platform android --profile preview --non-interactive --json > eas-build.json
           node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('eas-build.json','utf8')); const b=Array.isArray(d)?d[0]:d; if(!b?.id){process.exit(1)}; console.log('build_id='+b.id)" >> "$GITHUB_OUTPUT"
 
       - name: Download Android APK
-        if: github.ref_name == 'develop' && secrets.EXPO_TOKEN != ''
+        if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
         run: bunx eas build:download --platform android --id ${{ steps.eas_build.outputs.build_id }} --path app-preview.apk
 
       - name: Generate release metadata
@@ -81,7 +83,7 @@ jobs:
             web-dist.tar.gz
 
       - name: Create pre-release for develop (with APK)
-        if: github.ref_name == 'develop' && secrets.EXPO_TOKEN != ''
+        if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
@@ -94,7 +96,7 @@ jobs:
             app-preview.apk
 
       - name: Create pre-release for develop (web only)
-        if: github.ref_name == 'develop' && secrets.EXPO_TOKEN == ''
+        if: github.ref_name == 'develop' && env.EXPO_TOKEN == ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
