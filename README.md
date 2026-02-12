@@ -1,50 +1,91 @@
-# Welcome to your Expo app 👋
+# Neighborhood App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil y web de Neighborhood construida con Expo Router.
 
-## Get started
+## Requisitos
 
-1. Install dependencies
+- Node.js 20+
+- Bun 1.3+
+- Xcode 15+ (iOS)
+- Android Studio (Android)
 
-   ```bash
-   npm install
-   ```
+## Configuración
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+1. Copia variables de entorno:
 
 ```bash
-npm run reset-project
+cp .env.example .env
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Ajusta backend objetivo:
 
-## Learn more
+- `EXPO_PUBLIC_API_TARGET=development|production`
+- `EXPO_PUBLIC_API_URL_DEV` y `EXPO_PUBLIC_API_URL_PROD`
+- `EXPO_PUBLIC_API_URL` (opcional) fuerza una URL específica
 
-To learn more about developing your project with Expo, look at the following resources:
+## Ejecutar
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+bun install
+bun run ios
+bun run android
+bun run web
+```
 
-## Join the community
+## Probar en tu Mac (rápido)
 
-Join our community of developers creating universal apps.
+- iPhone físico (recomendado para pruebas reales):
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+bun run test:ios:device
+```
+
+Abre Expo Go en tu iPhone y escanea el QR (modo `--tunnel`, útil incluso fuera de la misma red).
+
+- iPhone físico en misma red Wi‑Fi (menor latencia):
+
+```bash
+bun run test:ios:lan
+```
+
+- iOS Simulator en Mac:
+
+```bash
+bun run test:ios:sim
+```
+
+- Web en desarrollo:
+
+```bash
+bun run test:web
+```
+
+- Web en modo producción local (artefacto exportado):
+
+```bash
+bun run test:web:prod
+```
+
+## Build multiplataforma
+
+- iOS y Android: usar EAS Build (`bunx eas build --platform ios|android`).
+- Web estática: `bunx expo export --platform web`.
+
+## Releases automáticos (GitHub Actions)
+
+- Push a `main`: crea un release estable automáticamente.
+- Push a `develop`: crea un pre-release de testing automáticamente.
+- En `develop`, también genera y adjunta `app-preview.apk` (si configuras `EXPO_TOKEN` en GitHub Secrets).
+- En ambos casos se adjunta `web-dist.tar.gz` con la exportación web para pruebas rápidas.
+- Workflow: [neighborhood-app/.github/workflows/branch-release.yml](.github/workflows/branch-release.yml)
+
+### Secret requerido para APK
+
+- En GitHub → Settings → Secrets and variables → Actions, crea:
+	- `EXPO_TOKEN`: token de Expo/EAS (`bunx eas token:create`)
+
+## Notas técnicas
+
+- La sesión se persiste de forma segura con `expo-secure-store`.
+- El refresh token se usa automáticamente ante `401` para renovar sesión.
+- La navegación usa un solo flujo: `/(public)` para autenticación y `/(app)` para usuarios autenticados.
