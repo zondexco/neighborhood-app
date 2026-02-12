@@ -42,12 +42,6 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Build web export
-        run: bun run build:web
-
-      - name: Package web build
-        run: tar -czf web-dist.tar.gz dist
-
       - name: Build Android APK (EAS)
         if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
         id: eas_build
@@ -79,8 +73,6 @@ jobs:
           generate_release_notes: true
           prerelease: false
           make_latest: true
-          files: |
-            web-dist.tar.gz
 
       - name: Create pre-release for develop (with APK)
         if: github.ref_name == 'develop' && env.EXPO_TOKEN != ''
@@ -92,7 +84,6 @@ jobs:
           prerelease: true
           make_latest: false
           files: |
-            web-dist.tar.gz
             app-preview.apk
 
       - name: Create pre-release for develop (web only)
@@ -104,5 +95,3 @@ jobs:
           generate_release_notes: true
           prerelease: true
           make_latest: false
-          files: |
-            web-dist.tar.gz

@@ -76,8 +76,13 @@ bun run test:web:prod
 - Push a `main`: crea un release estable automáticamente.
 - Push a `develop`: crea un pre-release de testing automáticamente.
 - En `develop`, también genera y adjunta `app-preview.apk` (si configuras `EXPO_TOKEN` en GitHub Secrets).
-- En ambos casos se adjunta `web-dist.tar.gz` con la exportación web para pruebas rápidas.
 - Workflow: [neighborhood-app/.github/workflows/branch-release.yml](.github/workflows/branch-release.yml)
+
+## Auto-deploy Web a VPS
+
+- Push a `main` o `develop`: build web y deploy directo al VPS (sin adjuntar `web-dist` a releases).
+- Workflow: [neighborhood-app/.github/workflows/deploy-web-vps.yml](.github/workflows/deploy-web-vps.yml)
+- Guía: [neighborhood-app/docs/deploy-web-vps.md](docs/deploy-web-vps.md)
 
 ### Secret requerido para APK
 
