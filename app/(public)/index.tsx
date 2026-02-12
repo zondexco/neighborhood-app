@@ -33,19 +33,36 @@ export default function WelcomeScreen() {
             </View>
 
             <Link href="/login-email" asChild>
-              <Pressable className="rounded-2xl overflow-hidden active:opacity-90">
+              <Pressable
+                style={({ pressed }) => ({
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  opacity: pressed ? 0.85 : 1,
+                })}
+              >
                 {Platform.OS === 'ios' ? (
                   <LiquidView 
                     intensity={80} 
                     tint="light" 
                     className="flex-row items-center justify-center p-4"
                   >
-                    <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
+                    <Text style={{ color: '#000', fontWeight: '700', fontSize: 18, marginRight: 8 }}>Conectar</Text>
                     <ArrowRight size={20} color="black" />
                   </LiquidView>
                 ) : (
-                  <View className="flex-row items-center justify-center p-4 bg-white rounded-2xl border border-white/40">
-                    <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 16,
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.4)',
+                    }}
+                  >
+                    <Text style={{ color: '#000', fontWeight: '700', fontSize: 18, marginRight: 8 }}>Conectar</Text>
                     <ArrowRight size={20} color="black" />
                   </View>
                 )}

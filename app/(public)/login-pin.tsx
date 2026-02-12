@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, ActivityIndicator, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -104,9 +104,19 @@ export default function LoginPinScreen() {
         <ResponsiveContainer maxWidth={560} className="flex-1 py-4 laptop:py-8">
           {/* Header */}
           <View className="py-4 items-start">
-            <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 items-center justify-center rounded-full bg-white/10 active:bg-white/20">
+            <Pressable
+              onPress={() => router.back()}
+              style={({ pressed }) => ({
+                width: 48,
+                height: 48,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 9999,
+                backgroundColor: pressed ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+              })}
+            >
               <ChevronLeft color="white" size={28} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <View className={`flex-1 items-center justify-center ${isLaptop ? 'rounded-3xl border border-white/10 bg-white/[0.03] px-8' : ''}`}>

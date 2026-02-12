@@ -1,29 +1,54 @@
-import React from 'react';
-import { Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useMemo } from 'react';
+import { Text, Pressable, ScrollView, Platform } from 'react-native';
+
+const DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
 
 interface DomainSuggestionsProps {
+  /** Valor actual del email para filtrar/ocultar sugerencias */
+  email?: string;
   onSelect: (domain: string) => void;
 }
 
-export const DomainSuggestions: React.FC<DomainSuggestionsProps> = ({ onSelect }) => {
-  const domains = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
+export const DomainSuggestions: React.FC<DomainSuggestionsProps> = ({ email = '', onSelect }) => {
+  const filteredDomains = useMemo(() => {
+    if (!email.includes('@')) return DOMAINS;
+
+    const typed = '@' + email.split('@')[1];
+    // Si ya tiene un dominio completo válido, ocultar sugerencias
+    if (DOMAINS.includes(typed.toLowerCase())) return [];
+    // Filtrar por lo que el usuario lleva escrito después del @
+    return DOMAINS.filter((d) => d.startsWith(typed.toLowerCase()) && d !== typed.toLowerCase());
+  }, [email]);
+
+  if (filteredDomains.length === 0) return null;
 
   return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false} 
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
       keyboardShouldPersistTaps="always"
       contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
-      className="mt-3 max-h-12"
+      style={{ marginTop: 12, maxHeight: 48 }}
     >
-      {domains.map((domain) => (
-        <TouchableOpacity
+      {filteredDomains.map((domain) => (
+        <Pressable
           key={domain}
           onPress={() => onSelect(domain)}
-          className="bg-white/10 px-4 py-2 rounded-full border border-white/10 active:bg-white/20"
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 9999,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.1)',
+          })}
+          // hitSlop agranda el área táctil para mejorar usabilidad en móviles
+          hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
         >
-          <Text className="text-white/80 text-sm font-medium">{domain}</Text>
-        </TouchableOpacity>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '500' }}>
+            {domain}
+          </Text>
+        </Pressable>
       ))}
     </ScrollView>
   );
