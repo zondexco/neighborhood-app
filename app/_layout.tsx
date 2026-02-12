@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
+import { Stack, usePathname, useRootNavigationState, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const segments = useSegments();
+  const pathname = usePathname();
   const navigationState = useRootNavigationState();
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
   const hasHydrated = useAuth((state) => state.hasHydrated);
@@ -32,18 +32,17 @@ export default function RootLayout() {
       redirectTimerRef.current = null;
     }
 
-    const firstSegment = segments[0];
-    const inApp = firstSegment === '(app)';
-    const inPublic = firstSegment === '(public)';
+    const publicRoutes = new Set(['/', '/login-email', '/login-pin']);
+    const isPublicRoute = publicRoutes.has(pathname);
 
-    if (isAuthenticated && !inApp) {
+    if (isAuthenticated && isPublicRoute) {
       redirectTimerRef.current = setTimeout(() => {
         router.replace('/home');
       }, 500);
       return;
     }
 
-    if (!isAuthenticated && !inPublic) {
+    if (!isAuthenticated && !isPublicRoute) {
       router.replace('/');
     }
 
@@ -53,7 +52,7 @@ export default function RootLayout() {
         redirectTimerRef.current = null;
       }
     };
-  }, [hasHydrated, isAuthenticated, navigationState?.key, router, segments]);
+  }, [hasHydrated, isAuthenticated, navigationState?.key, pathname, router]);
 
   return (
     <SafeAreaProvider>
