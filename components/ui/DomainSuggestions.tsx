@@ -12,6 +12,7 @@ export const DomainSuggestions: React.FC<DomainSuggestionsProps> = ({ onSelect }
     <ScrollView 
       horizontal 
       showsHorizontalScrollIndicator={false} 
+      keyboardShouldPersistTaps="always"
       contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
       className="mt-3 max-h-12"
     >

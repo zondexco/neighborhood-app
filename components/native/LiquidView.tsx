@@ -31,7 +31,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
         style={[styles.overflowHidden, style]}
         glassEffectStyle="regular"
         className={className}
-        pointerEvents={pointerEvents ?? 'box-none'}
+        pointerEvents={pointerEvents}
         {...props}
       >
         {children}
@@ -44,7 +44,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
       <View
         style={[styles.webGlass, style]}
         className={cn('bg-black/70 border border-white/10', className)}
-        pointerEvents={pointerEvents ?? 'box-none'}
+        pointerEvents={pointerEvents}
         {...props}
       >
         {children}
@@ -62,7 +62,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
           style
         ]} 
         className={cn("bg-black/65 border border-white/15", className)}
-        pointerEvents={pointerEvents ?? 'box-none'}
+        pointerEvents={pointerEvents}
         {...props}
       >
         {children}
@@ -77,7 +77,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
       tint={tint} 
       style={[styles.overflowHidden, style]}
       className={className}
-      pointerEvents={pointerEvents ?? 'box-none'}
+      pointerEvents={pointerEvents}
       {...props}
     >
       {children}

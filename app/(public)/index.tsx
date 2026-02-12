@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ImageBackground, Pressable } from 'react-native';
+import { View, Text, ImageBackground, Pressable, Platform } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,14 +34,21 @@ export default function WelcomeScreen() {
 
             <Link href="/login-email" asChild>
               <Pressable className="rounded-2xl overflow-hidden active:opacity-90">
-                <LiquidView 
-                  intensity={80} 
-                  tint="light" 
-                  className="flex-row items-center justify-center p-4"
-                >
-                  <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
-                  <ArrowRight size={20} color="black" />
-                </LiquidView>
+                {Platform.OS === 'ios' ? (
+                  <LiquidView 
+                    intensity={80} 
+                    tint="light" 
+                    className="flex-row items-center justify-center p-4"
+                  >
+                    <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
+                    <ArrowRight size={20} color="black" />
+                  </LiquidView>
+                ) : (
+                  <View className="flex-row items-center justify-center p-4 bg-white rounded-2xl border border-white/40">
+                    <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
+                    <ArrowRight size={20} color="black" />
+                  </View>
+                )}
               </Pressable>
             </Link>
           </LiquidView>
