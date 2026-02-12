@@ -14,20 +14,20 @@ export default function WelcomeScreen() {
       
       {/* Background Image - Remplace URI with a local asset for prod */}
       <ImageBackground 
-        source={require('@/assets/images/splash-icon.png')} 
+        source={require('../../assets/images/android-icon-background.png')} 
         className="flex-1 justify-end"
         resizeMode="cover"
       >
         {/* Gradient Overlay (Simulated with plain view for now) */}
         <View className="absolute inset-0 bg-black/30" />
 
-        <SafeAreaView className="p-6 pb-12">
+        <SafeAreaView className="p-4 md:p-6 pb-8 md:pb-12">
           {/* Glass Card */}
-          <LiquidView intensity={30} tint="dark" className="rounded-3xl p-6 overflow-hidden border border-white/20">
+          <LiquidView intensity={30} tint="dark" className="rounded-3xl p-5 md:p-6 overflow-hidden border border-white/20 w-full max-w-[720px] self-center">
             <View className="mb-6">
-              <Text className="text-white/80 text-lg font-medium mb-1">Bienvenido a</Text>
-              <Text className="text-white text-4xl font-bold tracking-tight">Neighborhood</Text>
-              <Text className="text-white/60 mt-4 text-base leading-6">
+              <Text className="text-white/80 text-base md:text-lg font-medium mb-1">Bienvenido a</Text>
+              <Text className="text-white text-3xl md:text-4xl font-bold tracking-tight">Neighborhood</Text>
+              <Text className="text-white/60 mt-4 text-sm md:text-base leading-6">
                 Tu comunidad, conectada. Gestiona pagos, reservas y accesos desde un solo lugar.
               </Text>
             </View>

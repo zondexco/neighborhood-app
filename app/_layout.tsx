@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 import '../global.css';
@@ -17,12 +17,19 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
+  const navigationState = useRootNavigationState();
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
   const hasHydrated = useAuth((state) => state.hasHydrated);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!hasHydrated) {
+    if (!hasHydrated || !navigationState?.key) {
       return;
+    }
+
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
     }
 
     const firstSegment = segments[0];
@@ -30,14 +37,23 @@ export default function RootLayout() {
     const inPublic = firstSegment === '(public)';
 
     if (isAuthenticated && !inApp) {
-      router.replace('/home');
+      redirectTimerRef.current = setTimeout(() => {
+        router.replace('/home');
+      }, 500);
       return;
     }
 
     if (!isAuthenticated && !inPublic) {
       router.replace('/');
     }
-  }, [hasHydrated, isAuthenticated, router, segments]);
+
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = null;
+      }
+    };
+  }, [hasHydrated, isAuthenticated, navigationState?.key, router, segments]);
 
   return (
     <SafeAreaProvider>
