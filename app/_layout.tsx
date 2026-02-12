@@ -30,12 +30,12 @@ export default function RootLayout() {
     const inPublic = firstSegment === '(public)';
 
     if (isAuthenticated && !inApp) {
-      router.replace('/(app)/(tabs)/home');
+      router.replace('/home');
       return;
     }
 
     if (!isAuthenticated && !inPublic) {
-      router.replace('/(public)');
+      router.replace('/');
     }
   }, [hasHydrated, isAuthenticated, router, segments]);
 

@@ -80,7 +80,7 @@ export default function LoginPinScreen() {
               role: response.data.role,
               isAdmin: response.data.is_admin,
             });
-            router.replace('/(app)/(tabs)/home');
+            router.replace('/home');
         }
     } catch (error: any) {
         setPin(''); // Reset PIN on error

@@ -23,7 +23,7 @@ export default function LoginEmailScreen() {
     }
     
     setEmailTemp(emailTrim);
-    router.push('/(public)/login-pin');
+    router.push('/login-pin');
   };
 
   const handleDomainSelect = (domain: string) => {

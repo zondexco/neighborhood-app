@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Platform, ViewProps } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import { cn } from '@/lib/utils';
 
 interface LiquidViewProps extends ViewProps {
@@ -23,6 +24,19 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
   className,
   ...props 
 }) => {
+
+  if (Platform.OS === 'ios' && isGlassEffectAPIAvailable()) {
+    return (
+      <GlassView
+        style={[styles.overflowHidden, style]}
+        glassEffectStyle="regular"
+        className={className}
+        {...props}
+      >
+        {children}
+      </GlassView>
+    );
+  }
   
   if (Platform.OS === 'android') {
     // Android Fallback: Solid Translucent Color

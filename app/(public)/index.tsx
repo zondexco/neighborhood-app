@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ImageBackground } from 'react-native';
+import { View, Text, ImageBackground, Pressable } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,7 +14,7 @@ export default function WelcomeScreen() {
       
       {/* Background Image - Remplace URI with a local asset for prod */}
       <ImageBackground 
-        source={{ uri: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=3000&auto=format&fit=crop' }} 
+        source={require('@/assets/images/splash-icon.png')} 
         className="flex-1 justify-end"
         resizeMode="cover"
       >
@@ -32,15 +32,17 @@ export default function WelcomeScreen() {
               </Text>
             </View>
 
-            <Link href="/(public)/login-email" asChild>
-              <LiquidView 
-                intensity={80} 
-                tint="light" 
-                className="flex-row items-center justify-center p-4 rounded-2xl active:opacity-90"
-              >
-                <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
-                <ArrowRight size={20} color="black" />
-              </LiquidView>
+            <Link href="/login-email" asChild>
+              <Pressable className="rounded-2xl overflow-hidden active:opacity-90">
+                <LiquidView 
+                  intensity={80} 
+                  tint="light" 
+                  className="flex-row items-center justify-center p-4"
+                >
+                  <Text className="text-black font-bold text-lg mr-2">Conectar</Text>
+                  <ArrowRight size={20} color="black" />
+                </LiquidView>
+              </Pressable>
             </Link>
           </LiquidView>
         </SafeAreaView>
