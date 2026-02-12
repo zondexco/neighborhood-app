@@ -27,6 +27,12 @@ export const Colors = {
   },
 };
 
+export const Breakpoints = {
+  tablet: 768,
+  laptop: 1024,
+  desktopXL: 1440,
+} as const;
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */

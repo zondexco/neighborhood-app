@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +8,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { VirtualKeypad } from '@/components/ui/VirtualKeypad';
 import { api } from '@/lib/api';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { Breakpoints } from '@/constants/theme';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 
 export default function LoginPinScreen() {
   const [pin, setPin] = useState('');
@@ -16,6 +18,8 @@ export default function LoginPinScreen() {
   
   const email = useAuth(state => state.emailTemp);
   const login = useAuth(state => state.login);
+  const { width } = useWindowDimensions();
+  const isLaptop = width >= Breakpoints.laptop;
 
   useEffect(() => {
     checkBiometrics();
@@ -97,37 +101,39 @@ export default function LoginPinScreen() {
       <StatusBar style="light" />
 
       <SafeAreaView className="flex-1">
-        {/* Header */}
-        <View className="px-8 py-6 items-start">
+        <ResponsiveContainer maxWidth={560} className="flex-1 py-4 laptop:py-8">
+          {/* Header */}
+          <View className="py-4 items-start">
             <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 items-center justify-center rounded-full bg-white/10 active:bg-white/20">
-                <ChevronLeft color="white" size={28} />
+              <ChevronLeft color="white" size={28} />
             </TouchableOpacity>
-        </View>
+          </View>
 
-        <View className="flex-1 items-center justify-center px-8">
+          <View className={`flex-1 items-center justify-center ${isLaptop ? 'rounded-3xl border border-white/10 bg-white/[0.03] px-8' : ''}`}>
             <Text className="text-white text-3xl font-bold mb-3 text-center">Ingresa tu PIN</Text>
             <Text className="text-neutral-400 text-lg mb-12 text-center">{email}</Text>
 
             {/* PIN Dots Display */}
             <View className="flex-row gap-4 mb-12 h-8">
-                {[...Array(6)].map((_, i) => (
-                    <View 
-                        key={i} 
-                        className={`w-4 h-4 rounded-full ${i < pin.length ? 'bg-white' : 'bg-white/20'}`}
-                    />
-                ))}
+              {[...Array(6)].map((_, i) => (
+                <View 
+                  key={i} 
+                  className={`w-4 h-4 rounded-full ${i < pin.length ? 'bg-white' : 'bg-white/20'}`}
+                />
+              ))}
             </View>
 
             {loading && <ActivityIndicator size="large" color="white" className="mb-8" />}
-        </View>
+          </View>
 
-        {/* Keypad at bottom */}
-        <VirtualKeypad 
+          {/* Keypad at bottom */}
+          <VirtualKeypad 
             onPress={handleKeyPress} 
             onDelete={handleDelete} 
             biometricAvailable={biometricAvailable}
             onBiometric={handleBiometricAuth}
-        />
+          />
+        </ResponsiveContainer>
       </SafeAreaView>
     </View>
   );

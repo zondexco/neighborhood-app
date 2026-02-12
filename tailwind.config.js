@@ -4,7 +4,21 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    screens: {
+      tablet: '768px',
+      laptop: '1024px',
+      'desktop-xl': '1440px',
+    },
+    extend: {
+      maxWidth: {
+        content: '1200px',
+        form: '560px',
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+      },
+    },
   },
   plugins: [],
 }

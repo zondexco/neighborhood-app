@@ -1,17 +1,30 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LiquidView } from '@/components/native/LiquidView';
 import { Wallet, QrCode, Bell, ChevronRight } from 'lucide-react-native';
+import { Breakpoints } from '@/constants/theme';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 
 export default function HomeScreen() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= Breakpoints.tablet;
+
   return (
     <View className="flex-1 bg-black">
       {/* Decorative Gradients */}
-      <View className="absolute top-0 right-0 w-[400] h-[400] bg-blue-600/20 rounded-full blur-[100px] translate-x-1/3 -translate-y-1/2" />
+      <View
+        className="absolute top-0 right-0 bg-blue-600/20 rounded-full"
+        style={{
+          width: Math.min(width * 0.8, 520),
+          height: Math.min(width * 0.8, 520),
+          transform: [{ translateX: width * 0.22 }, { translateY: -width * 0.25 }],
+        }}
+      />
       
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="p-6">
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          <ResponsiveContainer className="py-6">
           
           {/* Header */}
           <View className="mb-8 flex-row justify-between items-center">
@@ -25,7 +38,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Status Cards */}
-          <View className="flex-row gap-4 mb-8">
+          <View className={`mb-8 gap-4 ${isTablet ? 'flex-row' : 'flex-col'}`}>
             {/* Balance Card */}
             <LiquidView intensity={30} tint="dark" className="flex-1 p-4 rounded-3xl border border-white/10 gap-3">
               <View className="w-10 h-10 rounded-full bg-green-500/20 items-center justify-center">
@@ -69,7 +82,7 @@ export default function HomeScreen() {
               </LiquidView>
             ))}
           </View>
-
+          </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>
     </View>
