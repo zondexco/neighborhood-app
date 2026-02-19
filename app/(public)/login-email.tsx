@@ -50,7 +50,6 @@ export default function LoginEmailScreen() {
     const base = email.includes('@') ? email.split('@')[0] : email;
     const newEmail = (base || '') + domain;
     setEmail(newEmail);
-    // Use a longer timeout for web focus
     setTimeout(() => {
       inputRef.current?.focus();
     }, 150);
@@ -63,7 +62,6 @@ export default function LoginEmailScreen() {
         return d.startsWith(typed) && d !== typed;
       });
 
-  // Use plain View on web to avoid event issues with KeyboardAvoidingView
   const MainContent = (
     <ScrollView 
       style={s.scroll}
@@ -76,30 +74,27 @@ export default function LoginEmailScreen() {
       {/* Back Button */}
       <Pressable
         onPress={() => router.back()}
-        style={({ pressed }) => [
-          s.backButton,
-          pressed && s.backButtonPressed,
-        ]}
+        className="flex-row items-center mb-10 gap-x-2 active:opacity-50"
         hitSlop={15}
       >
         <ArrowLeft color="#a3a3a3" size={24} />
-        <Text style={s.backText}>Atrás</Text>
+        <Text className="text-[#a3a3a3] text-lg font-medium">Atrás</Text>
       </Pressable>
 
-      <View style={s.centerContent}>
+      <View className="flex-1 justify-center max-w-[520px] w-full self-center">
         {/* Icon */}
-        <View style={s.iconContainer}>
+        <View className="w-[68px] h-[68px] rounded-[22px] bg-neutral-900 border border-neutral-800 items-center justify-center mb-8">
           <Mail color="#ffffff" size={30} />
         </View>
 
         {/* Header */}
-        <Text style={s.title}>Identifícate</Text>
-        <Text style={s.subtitle}>
+        <Text className="text-white text-4xl font-extrabold tracking-tighter mb-3">Identifícate</Text>
+        <Text className="text-neutral-500 text-lg leading-7 mb-11">
           Ingresa tu correo electrónico para continuar con el inicio de sesión.
         </Text>
 
         {/* Email Input */}
-        <View style={[s.inputBox, email.length > 0 && s.inputBoxActive]}>
+        <View className={`flex-row items-center px-5 h-[68px] rounded-2xl border ${email.length > 0 ? 'border-neutral-700 bg-neutral-800/50' : 'border-neutral-800 bg-neutral-900'}`}>
           <Mail color="#525252" size={20} />
           <TextInput
             ref={inputRef}
@@ -113,25 +108,23 @@ export default function LoginEmailScreen() {
             autoCorrect={false}
             autoComplete="email"
             returnKeyType="next"
-            style={s.textInput}
+            className="flex-1 ml-3.5 text-white text-lg h-full"
+            // @ts-ignore web
+            style={Platform.OS === 'web' ? { outlineStyle: 'none' } : {}}
           />
         </View>
 
-        {/* Domain Suggestions */}
+        {/* Domain Suggestions - Mobile Fix with direct gap and margins */}
         {filteredDomains.length > 0 && (
-          <View style={s.chipsWrapper}>
+          <View className="flex-row flex-wrap mt-6 -mx-1.5">
             {filteredDomains.map((domain) => (
               <Pressable
                 key={domain}
                 onPress={() => handleDomainSelect(domain)}
-                style={({ pressed }) => [
-                  s.chip,
-                  pressed && s.chipPressed,
-                  // @ts-ignore
-                  Platform.OS === 'web' && { cursor: 'pointer' }
-                ]}
+                className="bg-neutral-900 px-4 py-3 rounded-xl border border-neutral-700 m-1.5 active:bg-neutral-800 active:border-neutral-600"
+                style={Platform.OS === 'web' ? { cursor: 'pointer' } : {}}
               >
-                <Text style={s.chipText}>{domain}</Text>
+                <Text className="text-neutral-300 text-sm font-medium">{domain}</Text>
               </Pressable>
             ))}
           </View>
@@ -139,32 +132,20 @@ export default function LoginEmailScreen() {
 
         {/* Validation indicator */}
         {isValidEmail && (
-          <View style={s.validationBox}>
-            <Text style={s.validationTxt}>✓ Formato de correo válido</Text>
+          <View className="mt-7 padding-3.5 bg-green-500/10 rounded-xl border border-green-500/30 p-3.5">
+            <Text className="text-green-400 text-sm font-semibold text-center">✓ Formato de correo válido</Text>
           </View>
         )}
       </View>
 
       {/* Footer Button */}
-      <View style={s.footer}>
+      <View className="py-8 items-center">
         <Pressable
           onPress={handleNext}
           disabled={!isValidEmail}
-          style={({ pressed }) => [
-            s.continueBtn,
-            {
-              backgroundColor: isValidEmail ? '#FFFFFF' : '#171717',
-              borderColor: isValidEmail ? '#FFFFFF' : '#262626',
-              opacity: pressed && isValidEmail ? 0.9 : 1,
-            },
-          ]}
+          className={`w-full max-w-[520px] h-16 rounded-2xl flex-row items-center justify-center border ${isValidEmail ? 'bg-white border-white active:opacity-90' : 'bg-neutral-900 border-neutral-800'}`}
         >
-          <Text
-            style={[
-              s.continueTxt,
-              { color: isValidEmail ? '#000000' : '#404040' },
-            ]}
-          >
+          <Text className={`font-extrabold text-lg mr-2.5 ${isValidEmail ? 'text-black' : 'text-neutral-600'}`}>
             Continuar
           </Text>
           <ArrowRight color={isValidEmail ? '#000000' : '#404040'} size={22} />
@@ -202,132 +183,5 @@ const s = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 28,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 40,
-    gap: 8,
-  },
-  backButtonPressed: {
-    opacity: 0.5,
-  },
-  backText: {
-    color: '#a3a3a3',
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    maxWidth: 520,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  iconContainer: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    backgroundColor: '#171717',
-    borderWidth: 1,
-    borderColor: '#262626',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 34,
-    fontWeight: '800',
-    letterSpacing: -1,
-    marginBottom: 12,
-  },
-  subtitle: {
-    color: '#737373',
-    fontSize: 18,
-    lineHeight: 28,
-    marginBottom: 44,
-  },
-  inputBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    height: 68,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#262626',
-    backgroundColor: '#171717',
-  },
-  inputBoxActive: {
-    borderColor: '#404040',
-    backgroundColor: '#1c1c1c',
-  },
-  textInput: {
-    flex: 1,
-    marginLeft: 14,
-    color: '#FFFFFF',
-    fontSize: 19,
-    height: '100%',
-    // @ts-ignore
-    ...Platform.select({ web: { outlineStyle: 'none' as any } }),
-  },
-  chipsWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 24,
-    marginHorizontal: -6, // Offset chip margins
-  },
-  chip: {
-    backgroundColor: '#171717',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#404040', // Brighter border for visibility
-    margin: 6, // Specific margin for mobile compatibility
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  chipPressed: {
-    backgroundColor: '#262626',
-    borderColor: '#737373',
-  },
-  chipText: {
-    color: '#e5e5e5', // Brighter text
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  validationBox: {
-    marginTop: 28,
-    padding: 14,
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.3)',
-  },
-  validationTxt: {
-    color: '#4ade80',
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  footer: {
-    paddingVertical: 32,
-    alignItems: 'center',
-  },
-  continueBtn: {
-    width: '100%',
-    maxWidth: 520,
-    height: 64,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  continueTxt: {
-    fontWeight: '800',
-    fontSize: 19,
-    marginRight: 10,
   },
 });
