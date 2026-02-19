@@ -22,10 +22,11 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({ onPress, onDelete,
       key={digit}
       onPress={() => onPress(digit)}
       style={({ pressed }) => ({
-        width: '30%',
+        width: '33.33%',
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: pressed ? 0.5 : 1,
+        opacity: pressed ? 0.6 : 1,
+        marginVertical: isLaptop ? 12 : 16,
       })}
     >
       <View
@@ -33,25 +34,25 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({ onPress, onDelete,
           width: keySize,
           height: keySize,
           borderRadius: keySize / 2,
-          backgroundColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: 'rgba(255,255,255,0.06)',
           alignItems: 'center',
           justifyContent: 'center',
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.05)',
+          borderWidth: 1.5,
+          borderColor: 'rgba(255,255,255,0.12)',
         }}
       >
-        <Text style={{ color: '#fff', fontWeight: '500', fontSize: isLaptop ? 28 : 30 }}>{digit}</Text>
+        <Text style={{ color: '#fff', fontWeight: '600', fontSize: isLaptop ? 28 : 32 }}>{digit}</Text>
       </View>
     </Pressable>
   );
 
   return (
-    <View className="w-full self-center px-2 pb-8" style={{ maxWidth: 420 }}>
-      <View className="flex-row flex-wrap justify-between gap-y-8">
+    <View className="w-full self-center px-4 pb-8" style={{ maxWidth: 480 }}>
+      <View className="flex-row flex-wrap justify-center">
         {digits.map(renderKey)}
 
         {/* Bottom Row */}
-        <View style={{ width: '30%', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: '33.33%', alignItems: 'center', justifyContent: 'center', marginVertical: isLaptop ? 12 : 16 }}>
           {biometricAvailable && (
             <Pressable
               onPress={onBiometric}
@@ -63,26 +64,27 @@ export const VirtualKeypad: React.FC<VirtualKeypadProps> = ({ onPress, onDelete,
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Ionicons name="finger-print" size={36} color="#fff" />
+              <Ionicons name="finger-print" size={38} color="#fff" />
             </Pressable>
           )}
         </View>
 
         {renderKey('0')}
 
-        <Pressable
-          onPress={onDelete}
-          style={({ pressed }) => ({
-            width: '30%',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <View style={{ width: keySize, height: keySize, alignItems: 'center', justifyContent: 'center' }}>
-            <Delete size={32} color="#fff" />
-          </View>
-        </Pressable>
+        <View style={{ width: '33.33%', alignItems: 'center', justifyContent: 'center', marginVertical: isLaptop ? 12 : 16 }}>
+          <Pressable
+            onPress={onDelete}
+            style={({ pressed }) => ({
+              width: keySize,
+              height: keySize,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Delete size={34} color="#fff" />
+          </Pressable>
+        </View>
       </View>
     </View>
   );

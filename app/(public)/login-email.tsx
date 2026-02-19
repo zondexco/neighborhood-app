@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -268,38 +268,42 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 19,
     height: '100%',
-    // @ts-ignore web
-    ...Platform.select({ web: { outlineStyle: 'none' } }),
+    // @ts-ignore
+    ...Platform.select({ web: { outlineStyle: 'none' as any } }),
   },
   chipsWrapper: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
     marginTop: 24,
+    marginHorizontal: -6, // Offset chip margins
   },
   chip: {
     backgroundColor: '#171717',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: '#404040', // Brighter border for visibility
+    margin: 6, // Specific margin for mobile compatibility
+    minWidth: 100,
+    alignItems: 'center',
   },
   chipPressed: {
     backgroundColor: '#262626',
+    borderColor: '#737373',
   },
   chipText: {
-    color: '#a3a3a3',
-    fontSize: 15,
+    color: '#e5e5e5', // Brighter text
+    fontSize: 14,
     fontWeight: '500',
   },
   validationBox: {
     marginTop: 28,
     padding: 14,
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.15)',
+    borderColor: 'rgba(34, 197, 94, 0.3)',
   },
   validationTxt: {
     color: '#4ade80',
