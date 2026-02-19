@@ -88,7 +88,11 @@ export default function HomeScreen() {
     }
   }, []);
 
-  useFocusEffect(fetchSummary);
+  useFocusEffect(
+    useCallback(() => {
+      fetchSummary();
+    }, [fetchSummary])
+  );
 
   // ── Greeting ──────────────────────────────────────────────
   const hour = new Date().getHours();

@@ -11,12 +11,6 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const hasSidebar = Platform.OS === 'web' && width >= Breakpoints.laptop;
 
-  // Position the floating pill above the safe-area bottom inset
-  const bottomOffset = Platform.select({
-    ios: Math.max(insets.bottom, 8) + 4,
-    android: 12,
-    default: hasSidebar ? undefined : 12,
-  });
 
   return (
     <Tabs
@@ -36,28 +30,28 @@ export default function TabLayout() {
           position: hasSidebar ? 'relative' : 'absolute',
           left: hasSidebar ? undefined : 16,
           right: hasSidebar ? undefined : 16,
-          bottom: hasSidebar ? undefined : bottomOffset,
+          bottom: hasSidebar ? undefined : Math.max(insets.bottom, 12),
           width: hasSidebar ? 250 : undefined,
-          height: hasSidebar ? '100%' : 68,
+          height: hasSidebar ? '100%' : 80, // Increased height for iOS labels
           borderTopWidth: 0,
           borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: 'rgba(255,255,255,0.08)',
-          borderRadius: hasSidebar ? 0 : 24,
-          overflow: hasSidebar ? 'visible' : 'hidden',
+          borderRadius: hasSidebar ? 0 : 28,
+          overflow: hasSidebar ? 'visible' : (Platform.OS === 'web' ? 'hidden' : 'visible'),
           backgroundColor: hasSidebar ? '#0a0a0a' : 'transparent',
           elevation: 0,
-          paddingTop: hasSidebar ? 16 : 0,
-          shadowColor: hasSidebar ? undefined : '#000',
-          shadowOpacity: hasSidebar ? undefined : 0.2,
-          shadowRadius: hasSidebar ? undefined : 24,
-          shadowOffset: hasSidebar ? undefined : { width: 0, height: 12 },
+          paddingTop: hasSidebar ? 16 : 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowRadius: 15,
+          shadowOffset: { width: 0, height: 4 },
         },
         tabBarBackground: () =>
           !hasSidebar ? (
             <LiquidView 
-              intensity={95}
+              intensity={Platform.OS === 'ios' ? 45 : 95} // Lower intensity on iOS for better glass look
               tint="systemChromeMaterialDark"
-              className="absolute inset-0 border border-white/15 rounded-3xl"
+              className="absolute inset-0 border border-white/20 rounded-[32px]"
             />
           ) : undefined,
         tabBarShowLabel: true,
