@@ -5,7 +5,6 @@ import { Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidView } from '@/components/native/LiquidView';
 import { Breakpoints } from '@/constants/theme';
-import { LiquidTabBar } from '@/components/navigation/LiquidTabBar';
 
 export default function TabLayout() {
   const { width } = useWindowDimensions();
@@ -14,7 +13,6 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      tabBar={props => !hasSidebar ? <LiquidTabBar {...props} /> : undefined}
       screenOptions={{
         headerStyle: {
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : '#0a0a0a',
@@ -27,17 +25,57 @@ export default function TabLayout() {
             <LiquidView intensity={75} tint="systemChromeMaterialDark" className="flex-1 border-b border-white/10" />
           ) : undefined,
         tabBarPosition: hasSidebar ? 'left' : 'bottom',
-        tabBarStyle: hasSidebar ? {
-          position: 'relative',
-          width: 250,
-          height: '100%',
+        tabBarStyle: {
+          position: hasSidebar ? 'relative' : 'absolute',
+          left: hasSidebar ? undefined : 16,
+          right: hasSidebar ? undefined : 16,
+          bottom: hasSidebar ? undefined : Math.max(insets.bottom, 12),
+          width: hasSidebar ? 250 : undefined,
+          height: hasSidebar ? '100%' : 88, // Taller version that avoids clipping
           borderTopWidth: 0,
-          borderRightWidth: 1,
+          borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: 'rgba(255,255,255,0.08)',
-          backgroundColor: '#0a0a0a',
-          paddingTop: 16,
-        } : { display: 'none' },
-        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : undefined,
+          borderRadius: hasSidebar ? 0 : 32,
+          overflow: hasSidebar ? 'visible' : (Platform.OS === 'web' ? 'hidden' : 'visible'),
+          backgroundColor: hasSidebar ? '#0a0a0a' : 'transparent',
+          elevation: 0,
+          paddingTop: hasSidebar ? 16 : 12,
+          paddingBottom: hasSidebar ? 0 : 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.4,
+          shadowRadius: 20,
+          shadowOffset: { width: 0, height: 8 },
+        },
+        tabBarBackground: () =>
+          !hasSidebar ? (
+            <LiquidView 
+              intensity={Platform.OS === 'ios' ? 85 : 95}
+              tint="systemMaterialDark"
+              className="absolute inset-0 border border-white/25 rounded-[36px]"
+            />
+          ) : undefined,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: hasSidebar ? 14 : 12,
+          fontWeight: '700',
+          marginBottom: hasSidebar ? 0 : 4,
+        },
+        tabBarItemStyle: hasSidebar
+          ? {
+              borderRadius: 12,
+              marginHorizontal: 10,
+              marginBottom: 8,
+              paddingVertical: 12,
+            }
+          : {
+              borderRadius: 20,
+              marginHorizontal: 2,
+              marginVertical: 4,
+            },
+        tabBarIconStyle: {
+          marginTop: hasSidebar ? 0 : 4,
+        },
+        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.12)',
         tabBarActiveTintColor: '#ffffff',
         tabBarInactiveTintColor: '#a1a1aa',
         sceneStyle: {
