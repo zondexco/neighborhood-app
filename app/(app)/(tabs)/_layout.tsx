@@ -27,20 +27,21 @@ export default function TabLayout() {
         tabBarPosition: hasSidebar ? 'left' : 'bottom',
         tabBarStyle: {
           position: hasSidebar ? 'relative' : 'absolute',
-          left: hasSidebar ? undefined : 16,
-          right: hasSidebar ? undefined : 16,
+          left: hasSidebar ? undefined : 0,
+          right: hasSidebar ? undefined : 0,
+          marginHorizontal: hasSidebar ? 0 : 24,
           bottom: hasSidebar ? undefined : Math.max(insets.bottom, 12),
           width: hasSidebar ? 250 : undefined,
-          height: hasSidebar ? '100%' : 88, // Taller version that avoids clipping
+          height: hasSidebar ? '100%' : 64,
           borderTopWidth: 0,
           borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: 'rgba(255,255,255,0.08)',
           borderRadius: hasSidebar ? 0 : 32,
-          overflow: hasSidebar ? 'visible' : (Platform.OS === 'web' ? 'hidden' : 'visible'),
+          overflow: 'hidden',
           backgroundColor: hasSidebar ? '#0a0a0a' : 'transparent',
           elevation: 0,
-          paddingTop: hasSidebar ? 16 : 12,
-          paddingBottom: hasSidebar ? 0 : 8,
+          paddingTop: hasSidebar ? 16 : 0,
+          paddingBottom: hasSidebar ? 0 : 0,
           shadowColor: '#000',
           shadowOpacity: 0.4,
           shadowRadius: 20,
@@ -51,14 +52,14 @@ export default function TabLayout() {
             <LiquidView 
               intensity={Platform.OS === 'ios' ? 85 : 95}
               tint="systemMaterialDark"
-              className="absolute inset-0 border border-white/25 rounded-[36px]"
+              className="absolute inset-0 border border-white/25 rounded-[32px]"
             />
           ) : undefined,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: hasSidebar ? 14 : 12,
+          fontSize: hasSidebar ? 14 : 10,
           fontWeight: '700',
-          marginBottom: hasSidebar ? 0 : 4,
+          marginBottom: hasSidebar ? 0 : 0,
         },
         tabBarItemStyle: hasSidebar
           ? {
@@ -68,14 +69,14 @@ export default function TabLayout() {
               paddingVertical: 12,
             }
           : {
-              borderRadius: 20,
-              marginHorizontal: 2,
+              borderRadius: 16,
+              marginHorizontal: 4,
               marginVertical: 4,
             },
         tabBarIconStyle: {
-          marginTop: hasSidebar ? 0 : 4,
+          marginTop: hasSidebar ? 0 : 2,
         },
-        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.12)',
+        tabBarActiveBackgroundColor: hasSidebar ? 'rgba(255,255,255,0.06)' : 'transparent',
         tabBarActiveTintColor: '#ffffff',
         tabBarInactiveTintColor: '#a1a1aa',
         sceneStyle: {
