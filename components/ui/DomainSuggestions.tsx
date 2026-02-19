@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Text, Pressable, View, StyleSheet } from 'react-native';
+import { Text, Pressable, View, StyleSheet, Platform } from 'react-native';
 
 const DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
 
@@ -11,20 +11,15 @@ interface DomainSuggestionsProps {
 
 export const DomainSuggestions: React.FC<DomainSuggestionsProps> = ({ email = '', onSelect }) => {
   const filteredDomains = useMemo(() => {
-    // Sin '@' aún → mostrar todos
     if (!email.includes('@')) return DOMAINS;
 
     const afterAt = email.split('@')[1] || '';
     const typed = '@' + afterAt.toLowerCase();
 
-    // Si ya coincide exactamente con un dominio completo → ocultar
     if (DOMAINS.includes(typed)) return [];
 
-    // Mostrar solo los que coinciden con lo que va escrito
     return DOMAINS.filter((d) => d.startsWith(typed) && d !== typed);
   }, [email]);
-
-  console.log('🏷️ DomainSuggestions:', { email, filteredDomains });
 
   if (filteredDomains.length === 0) return null;
 
@@ -33,15 +28,12 @@ export const DomainSuggestions: React.FC<DomainSuggestionsProps> = ({ email = ''
       {filteredDomains.map((domain) => (
         <Pressable
           key={domain}
-          onPress={() => {
-            console.log('💥 Chip pressed:', domain);
-            onSelect(domain);
-          }}
-          onPressIn={() => console.log('👆 Chip press IN:', domain)}
+          onPress={() => onSelect(domain)}
           hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
           style={({ pressed }) => [
             styles.chip,
             pressed && styles.chipPressed,
+            Platform.OS === 'web' && (styles.chipWeb as any),
           ]}
         >
           <Text style={styles.chipText}>{domain}</Text>
@@ -65,6 +57,11 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
+  },
+  chipWeb: {
+    // @ts-ignore - web only
+    cursor: 'pointer',
+    userSelect: 'none',
   },
   chipPressed: {
     backgroundColor: 'rgba(255,255,255,0.25)',

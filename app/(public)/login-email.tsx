@@ -44,7 +44,6 @@ export default function LoginEmailScreen() {
     setEmail(base + domain);
   };
 
-  // Filtrar dominios
   const filteredDomains = !email.includes('@')
     ? DOMAINS
     : DOMAINS.filter((d) => {
@@ -92,6 +91,7 @@ export default function LoginEmailScreen() {
                   style={({ pressed }) => [
                     s.chip,
                     pressed && s.chipPressed,
+                    Platform.OS === 'web' && (s.chipWeb as any),
                   ]}
                 >
                   <Text style={s.chipText}>{domain}</Text>
@@ -111,6 +111,7 @@ export default function LoginEmailScreen() {
                   backgroundColor: isValidEmail ? '#FFFFFF' : '#262626',
                   opacity: pressed && isValidEmail ? 0.8 : 1,
                 },
+                Platform.OS === 'web' && (s.continueBtnWeb as any),
               ]}
             >
               <Text
@@ -196,6 +197,11 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
+  chipWeb: {
+    // @ts-ignore - web only
+    cursor: 'pointer',
+    userSelect: 'none',
+  },
   chipPressed: {
     backgroundColor: 'rgba(255,255,255,0.25)',
   },
@@ -215,6 +221,12 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  continueBtnWeb: {
+    // @ts-ignore - web only
+    cursor: 'pointer',
+    userSelect: 'none',
+    outlineStyle: 'none',
   },
   continueTxt: {
     fontWeight: '700',

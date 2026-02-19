@@ -24,15 +24,23 @@ interface AuthSession {
   email?: string;
   role?: string;
   isAdmin?: boolean;
+  condominioId?: string;
+  condominioName?: string;
+  nombre?: string;
+  apellido?: string;
 }
 
-interface AuthState {
+export interface AuthState {
   token: string | null;
   refreshToken: string | null;
   userId: string | null;
   email: string | null;
   role: string | null;
   isAdmin: boolean;
+  condominioId: string | null;
+  condominioName: string | null;
+  nombre: string | null;
+  apellido: string | null;
   isAuthenticated: boolean;
   hasHydrated: boolean;
   emailTemp: string;
@@ -52,6 +60,10 @@ export const useAuth = create<AuthState>()(
       email: null,
       role: null,
       isAdmin: false,
+      condominioId: null,
+      condominioName: null,
+      nombre: null,
+      apellido: null,
       isAuthenticated: false,
       hasHydrated: false,
       emailTemp: '',
@@ -65,6 +77,10 @@ export const useAuth = create<AuthState>()(
           email: session.email ?? null,
           role: session.role ?? null,
           isAdmin: Boolean(session.isAdmin),
+          condominioId: session.condominioId ?? null,
+          condominioName: session.condominioName ?? null,
+          nombre: session.nombre ?? null,
+          apellido: session.apellido ?? null,
           isAuthenticated: true,
         }),
       updateSession: (session) =>
@@ -75,6 +91,10 @@ export const useAuth = create<AuthState>()(
           email: session.email ?? state.email,
           role: session.role ?? state.role,
           isAdmin: typeof session.isAdmin === 'boolean' ? session.isAdmin : state.isAdmin,
+          condominioId: session.condominioId ?? state.condominioId,
+          condominioName: session.condominioName ?? state.condominioName,
+          nombre: session.nombre ?? state.nombre,
+          apellido: session.apellido ?? state.apellido,
           isAuthenticated: true,
         })),
       logout: () =>
@@ -85,6 +105,10 @@ export const useAuth = create<AuthState>()(
           email: null,
           role: null,
           isAdmin: false,
+          condominioId: null,
+          condominioName: null,
+          nombre: null,
+          apellido: null,
           isAuthenticated: false,
           emailTemp: '',
         }),
@@ -99,6 +123,10 @@ export const useAuth = create<AuthState>()(
         email: state.email,
         role: state.role,
         isAdmin: state.isAdmin,
+        condominioId: state.condominioId,
+        condominioName: state.condominioName,
+        nombre: state.nombre,
+        apellido: state.apellido,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {

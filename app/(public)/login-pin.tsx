@@ -67,7 +67,6 @@ export default function LoginPinScreen() {
     }
 
     setLoading(true);
-    console.log("Enviando login payload:", { email: email, pin: completePin }); // Debug log
 
     try {
         const response = await api.post('/auth/login', {
@@ -83,6 +82,10 @@ export default function LoginPinScreen() {
               email: response.data.email,
               role: response.data.role,
               isAdmin: response.data.is_admin,
+              condominioId: response.data.condominio_id,
+              condominioName: response.data.condominio_nombre,
+              nombre: response.data.nombre,
+              apellido: response.data.apellido,
             });
             router.replace('/home');
         }
