@@ -45,6 +45,9 @@ jobs:
         run: bun run lint
 
       - name: Build web export
+        env:
+          EXPO_PUBLIC_API_TARGET: production
+          EXPO_PUBLIC_API_URL_PROD: ${{ secrets.API_URL_PROD }}
         run: bun run build:web
 
       - name: Package web dist

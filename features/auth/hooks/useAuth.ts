@@ -1,21 +1,8 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist, StateStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { appStorage } from '@/lib/storage';
 
 const AUTH_STORAGE_KEY = 'neighborhood-auth';
-
-const secureStorage: StateStorage = {
-  getItem: async (name) => {
-    const value = await SecureStore.getItemAsync(name);
-    return value ?? null;
-  },
-  setItem: async (name, value) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
 
 interface AuthSession {
   token: string;
@@ -115,7 +102,7 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: AUTH_STORAGE_KEY,
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => appStorage),
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,

@@ -40,10 +40,19 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
   }
 
   if (Platform.OS === 'web') {
+    const webGlassStyle = {
+      overflow: 'hidden' as const,
+      backgroundColor: 'rgba(10, 10, 10, 0.4)',
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+      borderWidth: 1,
+      backdropFilter: 'blur(24px) saturate(1.6)',
+      WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+    };
     return (
       <View
-        style={[styles.webGlass, style]}
-        className={cn('bg-black/70 border border-white/10', className)}
+        style={[webGlassStyle as any, style]}
+        className={cn('border border-white/12', className)}
         pointerEvents={pointerEvents}
         {...props}
       >
@@ -53,15 +62,17 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
   }
   
   if (Platform.OS === 'android') {
-    // Android Fallback: Solid Translucent Color
-    // TODO: Improve this with Skia for real-time blur if needed later.
+    const androidGlassStyle = {
+      backgroundColor: 'rgba(10, 10, 10, 0.55)',
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+      borderWidth: 1,
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+    };
     return (
       <View 
-        style={[
-          styles.androidGlass, 
-          style
-        ]} 
-        className={cn("bg-black/65 border border-white/15", className)}
+        style={[androidGlassStyle as any, style]} 
+        className={cn("border border-white/15", className)}
         pointerEvents={pointerEvents}
         {...props}
       >
@@ -89,12 +100,6 @@ const styles = StyleSheet.create({
   overflowHidden: {
     overflow: 'hidden',
   },
-  androidGlass: {
-    backgroundColor: 'rgba(10, 10, 10, 0.65)',
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-  },
-  webGlass: {
-    overflow: 'hidden',
-  }
 });
+
+
