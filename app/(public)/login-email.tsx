@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Mail, ArrowRight } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
+const isWeb = Platform.OS === 'web';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
 
@@ -29,10 +30,11 @@ export default function LoginEmailScreen() {
 
   const handleNext = () => {
     if (!isValidEmail) {
-      Alert.alert(
-        'Email inválido',
-        'Por favor ingresa un correo electrónico válido (ej: usuario@dominio.com).',
-      );
+      if (isWeb) {
+        window.alert('Por favor ingresa un correo electrónico válido (ej: usuario@dominio.com).');
+      } else {
+        Alert.alert('Email inválido', 'Por favor ingresa un correo electrónico válido (ej: usuario@dominio.com).');
+      }
       return;
     }
     setEmailTemp(emailTrim);
@@ -67,63 +69,139 @@ export default function LoginEmailScreen() {
           {/* Email Input */}
           <View style={s.inputRow}>
             <Mail color="#A3A3A3" size={20} />
-            <TextInput
-              placeholder="usuario@dominio.com"
-              placeholderTextColor="#666"
-              value={email}
-              onChangeText={handleEmailChange}
-              onSubmitEditing={handleNext}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="next"
-              style={s.textInput as any}
-            />
+            {isWeb ? (
+              <input
+                type="email"
+                placeholder="usuario@dominio.com"
+                value={email}
+                onChange={(e: any) => handleEmailChange(e.target.value)}
+                onKeyDown={(e: any) => e.key === 'Enter' && handleNext()}
+                autoCapitalize="none"
+                autoCorrect="off"
+                autoComplete="email"
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                  color: '#FFFFFF',
+                  fontSize: 18,
+                  height: 48,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            ) : (
+              <TextInput
+                placeholder="usuario@dominio.com"
+                placeholderTextColor="#666"
+                value={email}
+                onChangeText={handleEmailChange}
+                onSubmitEditing={handleNext}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                style={s.textInput as any}
+              />
+            )}
           </View>
 
           {/* Domain suggestions */}
           {filteredDomains.length > 0 && (
             <View style={s.chipsContainer}>
-              {filteredDomains.map((domain) => (
-                <Pressable
-                  key={domain}
-                  onPress={() => handleDomainSelect(domain)}
-                  style={({ pressed }) => [
-                    s.chip,
-                    pressed && s.chipPressed,
-                    Platform.OS === 'web' && (s.chipWeb as any),
-                  ]}
-                >
-                  <Text style={s.chipText}>{domain}</Text>
-                </Pressable>
-              ))}
+              {filteredDomains.map((domain) =>
+                isWeb ? (
+                  <div
+                    key={domain}
+                    onClick={() => handleDomainSelect(domain)}
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                      paddingLeft: 16,
+                      paddingRight: 16,
+                      paddingTop: 10,
+                      paddingBottom: 10,
+                      borderRadius: 9999,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      cursor: 'pointer',
+                      userSelect: 'none' as const,
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 500 }}>
+                      {domain}
+                    </span>
+                  </div>
+                ) : (
+                  <Pressable
+                    key={domain}
+                    onPress={() => handleDomainSelect(domain)}
+                    style={({ pressed }) => [
+                      s.chip,
+                      pressed && s.chipPressed,
+                    ]}
+                  >
+                    <Text style={s.chipText}>{domain}</Text>
+                  </Pressable>
+                ),
+              )}
             </View>
           )}
 
           {/* Continue button */}
           <View style={s.buttonRow}>
-            <Pressable
-              onPress={handleNext}
-              disabled={!isValidEmail}
-              style={({ pressed }) => [
-                s.continueBtn,
-                {
+            {isWeb ? (
+              <div
+                onClick={isValidEmail ? handleNext : undefined}
+                style={{
+                  height: 56,
+                  paddingLeft: 32,
+                  paddingRight: 32,
+                  borderRadius: 9999,
+                  display: 'flex',
+                  flexDirection: 'row' as const,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor: isValidEmail ? '#FFFFFF' : '#262626',
-                  opacity: pressed && isValidEmail ? 0.8 : 1,
-                },
-                Platform.OS === 'web' && (s.continueBtnWeb as any),
-              ]}
-            >
-              <Text
-                style={[
-                  s.continueTxt,
-                  { color: isValidEmail ? '#000' : '#737373' },
+                  cursor: isValidEmail ? 'pointer' : 'default',
+                  userSelect: 'none' as const,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    marginRight: 8,
+                    color: isValidEmail ? '#000' : '#737373',
+                  }}
+                >
+                  Continuar
+                </span>
+                <ArrowRight color={isValidEmail ? '#000' : '#525252'} size={20} />
+              </div>
+            ) : (
+              <Pressable
+                onPress={handleNext}
+                disabled={!isValidEmail}
+                style={({ pressed }) => [
+                  s.continueBtn,
+                  {
+                    backgroundColor: isValidEmail ? '#FFFFFF' : '#262626',
+                    opacity: pressed && isValidEmail ? 0.8 : 1,
+                  },
                 ]}
               >
-                Continuar
-              </Text>
-              <ArrowRight color={isValidEmail ? '#000' : '#525252'} size={20} />
-            </Pressable>
+                <Text
+                  style={[
+                    s.continueTxt,
+                    { color: isValidEmail ? '#000' : '#737373' },
+                  ]}
+                >
+                  Continuar
+                </Text>
+                <ArrowRight color={isValidEmail ? '#000' : '#525252'} size={20} />
+              </Pressable>
+            )}
           </View>
         </View>
       </View>
@@ -197,11 +275,6 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  chipWeb: {
-    // @ts-ignore - web only
-    cursor: 'pointer',
-    userSelect: 'none',
-  },
   chipPressed: {
     backgroundColor: 'rgba(255,255,255,0.25)',
   },
@@ -221,12 +294,6 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  continueBtnWeb: {
-    // @ts-ignore - web only
-    cursor: 'pointer',
-    userSelect: 'none',
-    outlineStyle: 'none',
   },
   continueTxt: {
     fontWeight: '700',
