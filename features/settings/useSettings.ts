@@ -15,8 +15,10 @@ export interface SettingsState {
   theme: ThemeMode;
   textSizeIndex: number;
   textScale: number;
+  hasHydrated: boolean;
   setTheme: (theme: ThemeMode) => void;
   setTextSizeIndex: (index: number) => void;
+  setHasHydrated: (value: boolean) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -25,11 +27,13 @@ export const useSettings = create<SettingsState>()(
       theme: 'dark',
       textSizeIndex: 1,
       textScale: 1,
+      hasHydrated: false,
       setTheme: (theme) => set({ theme }),
       setTextSizeIndex: (index) => {
         const clamped = Math.max(0, Math.min(TEXT_SIZES.length - 1, index));
         set({ textSizeIndex: clamped, textScale: TEXT_SIZES[clamped].value });
       },
+      setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
       name: 'neighborhood-settings',
@@ -39,6 +43,9 @@ export const useSettings = create<SettingsState>()(
         textSizeIndex: state.textSizeIndex,
         textScale: state.textScale,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );
