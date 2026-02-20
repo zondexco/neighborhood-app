@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,18 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { LiquidView } from '@/components/native/LiquidView';
-import { Bell, Package, Calendar, Megaphone, ChevronRight, RefreshCw } from 'lucide-react-native';
+import { Bell, Package, Calendar, Megaphone, ChevronRight, RefreshCw, HelpCircle } from 'lucide-react-native';
 import { Breakpoints } from '@/constants/theme';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { AuthState } from '@/features/auth/hooks/useAuth';
 import { api } from '@/lib/api';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { fetchUnreadCount } from '@/features/communications/api';
+import CondominioInfoSheet from '@/features/communications/components/CondominioInfoSheet';
 
 // ── Types ────────────────────────────────────────────────────
 interface PendingPackage {
@@ -76,13 +79,19 @@ export default function HomeScreen() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const infoSheetRef = useRef<BottomSheet>(null);
 
   const fetchSummary = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<DashboardSummary>('/dashboard/summary');
+      const [res, count] = await Promise.all([
+        api.get<DashboardSummary>('/dashboard/summary'),
+        fetchUnreadCount().catch(() => 0),
+      ]);
       setSummary(res.data);
+      setUnreadCount(count);
     } catch {
       setError('No se pudo cargar la información. Verifica tu conexión.');
     } finally {
@@ -125,9 +134,27 @@ export default function HomeScreen() {
                   {displayName}
                 </Text>
               </View>
-              <TouchableOpacity className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 items-center justify-center border border-black/10 dark:border-white/10">
-                <Bell color={iconPrimary} size={20} />
-              </TouchableOpacity>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity
+                  onPress={() => infoSheetRef.current?.snapToIndex(0)}
+                  className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 items-center justify-center border border-black/10 dark:border-white/10"
+                >
+                  <HelpCircle color={iconPrimary} size={20} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push('/notifications' as any)}
+                  className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 items-center justify-center border border-black/10 dark:border-white/10"
+                >
+                  <Bell color={iconPrimary} size={20} />
+                  {unreadCount > 0 && (
+                    <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">
+                      <Text className="text-white text-[10px] font-bold">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Loading state */}
@@ -271,6 +298,8 @@ export default function HomeScreen() {
           </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>
+
+      <CondominioInfoSheet ref={infoSheetRef} />
     </View>
   );
 }

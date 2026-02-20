@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
-import { Shield, Users, Building2, RefreshCw, MessageSquare } from 'lucide-react-native';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { Shield, Users, Building2, RefreshCw, MessageSquare, Megaphone, Edit3 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -17,6 +18,7 @@ import type { AuthState } from '@/features/auth/hooks/useAuth';
 import { fetchAdminStats, fetchCondominio } from '@/features/admin/api';
 import type { AdminStats, Condominio } from '@/features/admin/types';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import CondominioEditSheet from '@/features/admin/components/CondominioEditSheet';
 
 export default function AdminDashboard() {
   const { width } = useWindowDimensions();
@@ -26,6 +28,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [condominio, setCondominio] = useState<Condominio | null>(null);
   const [loading, setLoading] = useState(true);
+  const editSheetRef = useRef<BottomSheet>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -71,6 +74,14 @@ export default function AdminDashboard() {
       color: '#34d399',
       bg: 'bg-emerald-500/15',
       route: '/admin/apartments',
+    },
+    {
+      title: 'Comunicados',
+      subtitle: `${stats?.comunicaciones_mes ?? '—'} publicados`,
+      icon: Megaphone,
+      color: '#fb923c',
+      bg: 'bg-orange-500/15',
+      route: '/admin/communications',
     },
   ];
 
@@ -184,9 +195,22 @@ export default function AdminDashboard() {
                 {/* Condominio info */}
                 {condominio && (
                   <View>
-                    <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-3">
-                      Información del conjunto
-                    </Text>
+                    <View className="flex-row items-center justify-between mb-3">
+                      <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                        Información del conjunto
+                      </Text>
+                      <Pressable
+                        onPress={() => editSheetRef.current?.snapToIndex(0)}
+                        className="flex-row items-center gap-1"
+                        hitSlop={8}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                      >
+                        <Edit3 color={iconMuted} size={14} />
+                        <Text className="text-violet-600 dark:text-violet-400 text-xs font-semibold">
+                          Editar
+                        </Text>
+                      </Pressable>
+                    </View>
                     <LiquidView
                       intensity={15}
                       tint={isDark ? 'dark' : 'light'}
@@ -221,6 +245,12 @@ export default function AdminDashboard() {
           </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>
+
+      <CondominioEditSheet
+        ref={editSheetRef}
+        condominio={condominio}
+        onSaved={fetchData}
+      />
     </View>
   );
 }
