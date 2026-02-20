@@ -5,6 +5,7 @@ import { Calendar, Clock, Users, MapPin, X } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { updateReservation, deleteReservation } from '../api';
 import type { Reservation } from '../types';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface Props {
   reservation: Reservation | null;
@@ -14,15 +15,16 @@ interface Props {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pendiente: { label: 'Pendiente', color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
-  confirmada: { label: 'Confirmada', color: 'text-green-400', bg: 'bg-green-500/20' },
-  cancelado: { label: 'Cancelada', color: 'text-red-400', bg: 'bg-red-500/20' },
+  pendiente: { label: 'Pendiente', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/20' },
+  confirmada: { label: 'Confirmada', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/20' },
+  cancelado:  { label: 'Cancelada',  color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-500/20'    },
 };
 
 const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
   ({ reservation, role, isAdmin, onUpdated }, ref) => {
     const snapPoints = useMemo(() => ['55%'], []);
     const [loading, setLoading] = useState(false);
+    const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
     const isResidente = !isAdmin && role !== 'empleado';
     const canCancel =
@@ -98,25 +100,26 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: '#141414' }}
-        handleIndicatorStyle={{ backgroundColor: '#555' }}
+        backgroundStyle={{ backgroundColor: bgCard }}
+        handleIndicatorStyle={{ backgroundColor: sheetHandle }}
       >
         <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
           {/* Header */}
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
-              <Text className="text-white text-lg font-bold">Detalle de Reserva</Text>
+              <Text className="text-neutral-950 dark:text-white text-lg font-bold">Detalle de Reserva</Text>
               <View className={`px-2 py-0.5 rounded-full ${status.bg}`}>
                 <Text className={`text-xs font-bold ${status.color}`}>{status.label}</Text>
               </View>
             </View>
             <Pressable
               onPress={close}
-              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 items-center justify-center"
             >
-              <X color="white" size={20} />
+              <X color={iconPrimary} size={20} />
             </Pressable>
           </View>
 
@@ -124,15 +127,15 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
           <LiquidView
             intensity={15}
             tint="dark"
-            className="p-4 rounded-2xl border border-white/5 gap-4 mb-4"
+            className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-4 mb-4"
           >
             <View className="flex-row items-center gap-3">
               <View className="w-9 h-9 rounded-full bg-blue-500/20 items-center justify-center">
                 <MapPin color="#60a5fa" size={18} />
               </View>
               <View className="flex-1">
-                <Text className="text-neutral-400 text-xs">Espacio</Text>
-                <Text className="text-white font-medium">
+                <Text className="text-neutral-500 text-xs">Espacio</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">
                   {reservation.espacio_nombre || 'Espacio reservado'}
                 </Text>
               </View>
@@ -143,8 +146,8 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
                 <Calendar color="#60a5fa" size={18} />
               </View>
               <View className="flex-1">
-                <Text className="text-neutral-400 text-xs">Fecha</Text>
-                <Text className="text-white font-medium">
+                <Text className="text-neutral-500 text-xs">Fecha</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">
                   {formatDate(reservation.fecha_inicio)}
                 </Text>
               </View>
@@ -155,8 +158,8 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
                 <Clock color="#4ade80" size={18} />
               </View>
               <View className="flex-1">
-                <Text className="text-neutral-400 text-xs">Horario</Text>
-                <Text className="text-white font-medium">
+                <Text className="text-neutral-500 text-xs">Horario</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">
                   {formatTime(reservation.fecha_inicio)} - {formatTime(reservation.fecha_fin)}
                 </Text>
               </View>
@@ -167,17 +170,17 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
                 <Users color="#a78bfa" size={18} />
               </View>
               <View className="flex-1">
-                <Text className="text-neutral-400 text-xs">Personas</Text>
-                <Text className="text-white font-medium">
+                <Text className="text-neutral-500 text-xs">Personas</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">
                   {reservation.personas_esperadas}
                 </Text>
               </View>
             </View>
 
             {reservation.costo_total != null && (
-              <View className="border-t border-white/10 pt-3 flex-row justify-between items-center">
-                <Text className="text-neutral-400">Costo</Text>
-                <Text className="text-green-400 font-bold text-lg">
+              <View className="border-t border-black/10 dark:border-white/10 pt-3 flex-row justify-between items-center">
+                <Text className="text-neutral-600 dark:text-neutral-400">Costo</Text>
+                <Text className="text-green-600 dark:text-green-400 font-bold text-lg">
                   ${reservation.costo_total.toLocaleString()}
                 </Text>
               </View>
@@ -186,7 +189,7 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
 
           {/* Actions */}
           {loading ? (
-            <ActivityIndicator color="white" className="mt-4" />
+            <ActivityIndicator color={activityColor} className="mt-4" />
           ) : (
             <View className="gap-3">
               {canConfirm && (
@@ -200,9 +203,9 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
               {canCancel && (
                 <Pressable
                   onPress={() => handleAction('cancel')}
-                  className="bg-white/10 rounded-2xl py-3.5 items-center border border-red-500/30"
+                  className="bg-black/10 dark:bg-white/10 rounded-2xl py-3.5 items-center border border-red-500/30"
                 >
-                  <Text className="text-red-400 font-bold">Cancelar reserva</Text>
+                  <Text className="text-red-600 dark:text-red-400 font-bold">Cancelar reserva</Text>
                 </Pressable>
               )}
               {canDelete && (

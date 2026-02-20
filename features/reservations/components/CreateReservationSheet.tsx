@@ -14,6 +14,7 @@ import { Calendar, Clock, Users, MapPin, ChevronLeft, X } from 'lucide-react-nat
 import { LiquidView } from '@/components/native/LiquidView';
 import { fetchSpaces, createReservation } from '../api';
 import type { Space, CreateReservationPayload } from '../types';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface Props {
   onCreated: () => void;
@@ -23,6 +24,7 @@ type Step = 'space' | 'datetime' | 'people' | 'confirm';
 
 const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, ref) => {
   const snapPoints = useMemo(() => ['92%'], []);
+  const { isDark, iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
   // Form state
   const [step, setStep] = useState<Step>('space');
@@ -167,10 +169,11 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: '#141414' }}
-      handleIndicatorStyle={{ backgroundColor: '#555' }}
+      backgroundStyle={{ backgroundColor: bgCard }}
+      handleIndicatorStyle={{ backgroundColor: sheetHandle }}
       onChange={(index) => {
         if (index === -1) resetForm();
       }}
@@ -185,22 +188,22 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                 else if (step === 'people') setStep('datetime');
                 else if (step === 'confirm') setStep('people');
               }}
-              className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 items-center justify-center"
             >
-              <ChevronLeft color="white" size={20} />
+              <ChevronLeft color={iconPrimary} size={20} />
             </Pressable>
           ) : (
             <View className="w-10" />
           )}
-          <Text className="text-white text-lg font-bold flex-1 text-center">Nueva Reserva</Text>
+          <Text className="text-neutral-950 dark:text-white text-lg font-bold flex-1 text-center">Nueva Reserva</Text>
           <Pressable
             onPress={() => {
               resetForm();
               (ref as React.RefObject<BottomSheet>)?.current?.close();
             }}
-            className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+            className="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 items-center justify-center"
           >
-            <X color="white" size={20} />
+            <X color={iconPrimary} size={20} />
           </Pressable>
         </View>
 
@@ -212,7 +215,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               className={`flex-1 h-1 rounded-full ${
                 i <= ['space', 'datetime', 'people', 'confirm'].indexOf(step)
                   ? 'bg-blue-500'
-                  : 'bg-white/10'
+                  : 'bg-black/10 dark:bg-white/10'
               }`}
             />
           ))}
@@ -223,12 +226,12 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
           <ScrollView showsVerticalScrollIndicator={false}>
             <View className="flex-row items-center gap-2 mb-4">
               <MapPin color="#60a5fa" size={18} />
-              <Text className="text-white font-semibold text-base">Selecciona un espacio</Text>
+              <Text className="text-neutral-950 dark:text-white font-semibold text-base">Selecciona un espacio</Text>
             </View>
             {loadingSpaces ? (
-              <ActivityIndicator color="white" className="mt-8" />
+              <ActivityIndicator color={activityColor} className="mt-8" />
             ) : spaces.length === 0 ? (
-              <Text className="text-neutral-400 text-center mt-8">
+              <Text className="text-neutral-600 dark:text-neutral-400 text-center mt-8">
                 No hay espacios disponibles
               </Text>
             ) : (
@@ -245,15 +248,15 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                       intensity={15}
                       tint="dark"
                       className={`p-4 rounded-2xl border ${
-                        selectedSpace?.id === space.id ? 'border-blue-500/50' : 'border-white/5'
+                        selectedSpace?.id === space.id ? 'border-blue-500/50' : 'border-black/5 dark:border-white/5'
                       }`}
                     >
-                      <Text className="text-white font-semibold text-base">{space.nombre}</Text>
+                      <Text className="text-neutral-950 dark:text-white font-semibold text-base">{space.nombre}</Text>
                       {space.descripcion && (
-                        <Text className="text-neutral-400 text-sm mt-1">{space.descripcion}</Text>
+                        <Text className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">{space.descripcion}</Text>
                       )}
                       {space.costo_hora != null && (
-                        <Text className="text-blue-400 text-sm mt-2 font-medium">
+                        <Text className="text-blue-600 dark:text-blue-400 text-sm mt-2 font-medium">
                           ${space.costo_hora.toLocaleString()}/hora
                         </Text>
                       )}
@@ -273,14 +276,14 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <View>
                 <View className="flex-row items-center gap-2 mb-3">
                   <Calendar color="#60a5fa" size={18} />
-                  <Text className="text-white font-semibold">Fecha</Text>
+                  <Text className="text-neutral-950 dark:text-white font-semibold">Fecha</Text>
                 </View>
                 {Platform.OS === 'android' && !showDatePicker && (
                   <Pressable
                     onPress={() => setShowDatePicker(true)}
-                    className="bg-white/10 rounded-xl px-4 py-3"
+                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
                   >
-                    <Text className="text-white text-base">{formatDate2(date)}</Text>
+                    <Text className="text-neutral-950 dark:text-white text-base">{formatDate2(date)}</Text>
                   </Pressable>
                 )}
                 {showDatePicker && (
@@ -290,7 +293,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                     display={Platform.OS === 'ios' ? 'inline' : 'default'}
                     minimumDate={new Date()}
                     onChange={handleDateChange}
-                    themeVariant="dark"
+                    themeVariant={isDark ? 'dark' : 'light'}
                   />
                 )}
               </View>
@@ -299,14 +302,14 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <View>
                 <View className="flex-row items-center gap-2 mb-3">
                   <Clock color="#4ade80" size={18} />
-                  <Text className="text-white font-semibold">Hora de inicio</Text>
+                  <Text className="text-neutral-950 dark:text-white font-semibold">Hora de inicio</Text>
                 </View>
                 {Platform.OS === 'android' && !showStartPicker && (
                   <Pressable
                     onPress={() => setShowStartPicker(true)}
-                    className="bg-white/10 rounded-xl px-4 py-3"
+                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
                   >
-                    <Text className="text-white text-base">{formatTime(startTime)}</Text>
+                    <Text className="text-neutral-950 dark:text-white text-base">{formatTime(startTime)}</Text>
                   </Pressable>
                 )}
                 {showStartPicker && (
@@ -316,7 +319,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     minuteInterval={30}
                     onChange={handleStartChange}
-                    themeVariant="dark"
+                    themeVariant={isDark ? 'dark' : 'light'}
                   />
                 )}
               </View>
@@ -325,14 +328,14 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <View>
                 <View className="flex-row items-center gap-2 mb-3">
                   <Clock color="#f87171" size={18} />
-                  <Text className="text-white font-semibold">Hora de fin</Text>
+                  <Text className="text-neutral-950 dark:text-white font-semibold">Hora de fin</Text>
                 </View>
                 {Platform.OS === 'android' && !showEndPicker && (
                   <Pressable
                     onPress={() => setShowEndPicker(true)}
-                    className="bg-white/10 rounded-xl px-4 py-3"
+                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
                   >
-                    <Text className="text-white text-base">{formatTime(endTime)}</Text>
+                    <Text className="text-neutral-950 dark:text-white text-base">{formatTime(endTime)}</Text>
                   </Pressable>
                 )}
                 {showEndPicker && (
@@ -342,7 +345,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     minuteInterval={30}
                     onChange={handleEndChange}
-                    themeVariant="dark"
+                    themeVariant={isDark ? 'dark' : 'light'}
                   />
                 )}
               </View>
@@ -362,15 +365,15 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
           <View className="gap-6">
             <View className="flex-row items-center gap-2">
               <Users color="#60a5fa" size={18} />
-              <Text className="text-white font-semibold">Personas esperadas</Text>
+              <Text className="text-neutral-950 dark:text-white font-semibold">Personas esperadas</Text>
             </View>
             <TextInput
               value={people}
               onChangeText={setPeople}
               placeholder="Ej: 10"
-              placeholderTextColor="#666"
+              placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               keyboardType="number-pad"
-              className="bg-white/10 rounded-xl px-4 py-4 text-white text-lg"
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-4 text-neutral-950 dark:text-white text-lg"
             />
             <Pressable
               onPress={() => {
@@ -386,49 +389,49 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
             >
               <Text className="text-white font-bold text-base">Revisar reserva</Text>
             </Pressable>
-            {error && <Text className="text-red-400 text-sm text-center">{error}</Text>}
+            {error && <Text className="text-red-600 dark:text-red-400 text-sm text-center">{error}</Text>}
           </View>
         )}
 
         {/* Step: Confirm */}
         {step === 'confirm' && (
           <View className="gap-4">
-            <Text className="text-white font-semibold text-base mb-2">Resumen de tu reserva</Text>
+            <Text className="text-neutral-950 dark:text-white font-semibold text-base mb-2">Resumen de tu reserva</Text>
 
-            <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-white/5 gap-3">
+            <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-3">
               <View className="flex-row justify-between">
-                <Text className="text-neutral-400">Espacio</Text>
-                <Text className="text-white font-medium">{selectedSpace?.nombre}</Text>
+                <Text className="text-neutral-600 dark:text-neutral-400">Espacio</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">{selectedSpace?.nombre}</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-neutral-400">Fecha</Text>
-                <Text className="text-white font-medium">{formatDate2(date)}</Text>
+                <Text className="text-neutral-600 dark:text-neutral-400">Fecha</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">{formatDate2(date)}</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-neutral-400">Horario</Text>
-                <Text className="text-white font-medium">
+                <Text className="text-neutral-600 dark:text-neutral-400">Horario</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">
                   {formatTime(startTime)} - {formatTime(endTime)}
                 </Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-neutral-400">Duración</Text>
-                <Text className="text-white font-medium">{estimatedHours}h</Text>
+                <Text className="text-neutral-600 dark:text-neutral-400">Duración</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">{estimatedHours}h</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-neutral-400">Personas</Text>
-                <Text className="text-white font-medium">{people}</Text>
+                <Text className="text-neutral-600 dark:text-neutral-400">Personas</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">{people}</Text>
               </View>
               {estimatedCost != null && (
-                <View className="flex-row justify-between border-t border-white/10 pt-3 mt-1">
-                  <Text className="text-neutral-400 font-semibold">Costo estimado</Text>
-                  <Text className="text-green-400 font-bold text-lg">
+                <View className="flex-row justify-between border-t border-black/10 dark:border-white/10 pt-3 mt-1">
+                  <Text className="text-neutral-600 dark:text-neutral-400 font-semibold">Costo estimado</Text>
+                  <Text className="text-green-600 dark:text-green-400 font-bold text-lg">
                     ${estimatedCost.toLocaleString()}
                   </Text>
                 </View>
               )}
             </LiquidView>
 
-            {error && <Text className="text-red-400 text-sm text-center">{error}</Text>}
+            {error && <Text className="text-red-600 dark:text-red-400 text-sm text-center">{error}</Text>}
 
             <Pressable
               onPress={handleSubmit}
@@ -436,7 +439,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               className={`rounded-2xl py-4 items-center ${submitting ? 'bg-blue-600/50' : 'bg-blue-600'}`}
             >
               {submitting ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={activityColor} />
               ) : (
                 <Text className="text-white font-bold text-base">Confirmar reserva</Text>
               )}

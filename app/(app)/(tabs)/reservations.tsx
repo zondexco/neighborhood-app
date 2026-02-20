@@ -26,12 +26,13 @@ import CreateReservationSheet from '@/features/reservations/components/CreateRes
 import ReservationDetailSheet from '@/features/reservations/components/ReservationDetailSheet';
 import SpacesManagement from '@/features/reservations/components/SpacesManagement';
 import SpaceFormSheet from '@/features/reservations/components/SpaceFormSheet';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 // ── Helpers ───────────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pendiente: { label: 'Pendiente', color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
-  confirmada: { label: 'Confirmada', color: 'text-green-400', bg: 'bg-green-500/20' },
-  cancelado: { label: 'Cancelada', color: 'text-red-400', bg: 'bg-red-500/20' },
+  pendiente: { label: 'Pendiente', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/20' },
+  confirmada: { label: 'Confirmada', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/20' },
+  cancelado:  { label: 'Cancelada',  color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-500/20'    },
 };
 
 function formatDate(iso: string) {
@@ -50,6 +51,7 @@ function formatTime(iso: string) {
 export default function ReservationsScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width >= Breakpoints.tablet;
+  const { isDark, iconPrimary, iconMuted, activityColor } = useThemeColors();
 
   const userId = useAuth((s: AuthState) => s.userId);
   const role = useAuth((s: AuthState) => s.role);
@@ -126,7 +128,7 @@ export default function ReservationsScreen() {
   });
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
         className="absolute top-0 left-0 bg-blue-600/15 rounded-full"
@@ -143,11 +145,11 @@ export default function ReservationsScreen() {
             {/* Header */}
             <View className="flex-row items-center justify-between mb-6">
               <View>
-                <Text className="text-white text-2xl font-bold">Reservas</Text>
+                <Text className="text-neutral-950 dark:text-white text-2xl font-bold">Reservas</Text>
                 {isEmployee && (
                   <View className="flex-row items-center gap-1.5 mt-1.5 bg-blue-500/10 self-start px-3 py-1 rounded-full">
                     <Eye color="#60a5fa" size={14} />
-                    <Text className="text-blue-400 text-xs font-medium">Solo lectura</Text>
+                    <Text className="text-blue-600 dark:text-blue-400 text-xs font-medium">Solo lectura</Text>
                   </View>
                 )}
               </View>
@@ -165,7 +167,7 @@ export default function ReservationsScreen() {
             {/* Loading */}
             {loading && (
               <View className="items-center py-16">
-                <ActivityIndicator size="large" color="white" />
+                <ActivityIndicator size="large" color={activityColor} />
                 <Text className="text-neutral-500 mt-4 text-base">Cargando...</Text>
               </View>
             )}
@@ -174,16 +176,16 @@ export default function ReservationsScreen() {
             {!loading && error && (
               <LiquidView
                 intensity={15}
-                tint="dark"
+                tint={isDark ? 'dark' : 'light'}
                 className="p-6 rounded-2xl border border-red-500/20 items-center gap-3"
               >
-                <Text className="text-red-400 text-base text-center">{error}</Text>
+                <Text className="text-red-600 dark:text-red-400 text-base text-center">{error}</Text>
                 <Pressable
                   onPress={fetchData}
-                  className="flex-row items-center gap-2 bg-white/10 px-4 py-2 rounded-full"
+                  className="flex-row items-center gap-2 bg-black/10 dark:bg-white/10 px-4 py-2 rounded-full"
                 >
-                  <RefreshCw color="white" size={16} />
-                  <Text className="text-white font-medium">Reintentar</Text>
+                  <RefreshCw color={iconPrimary} size={16} />
+                  <Text className="text-neutral-950 dark:text-white font-medium">Reintentar</Text>
                 </Pressable>
               </LiquidView>
             )}
@@ -208,11 +210,11 @@ export default function ReservationsScreen() {
                   {sortedReservations.length === 0 ? (
                     <LiquidView
                       intensity={15}
-                      tint="dark"
-                      className="p-6 rounded-2xl border border-white/5 items-center gap-3"
+                      tint={isDark ? 'dark' : 'light'}
+                      className="p-6 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-3"
                     >
                       <Calendar color="#60a5fa" size={32} />
-                      <Text className="text-neutral-400 text-sm text-center">
+                      <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">
                         {canCreate
                           ? 'No tienes reservas aún. Crea una nueva reserva para empezar.'
                           : 'No hay reservas registradas.'}
@@ -232,12 +234,12 @@ export default function ReservationsScreen() {
                           >
                             <LiquidView
                               intensity={15}
-                              tint="dark"
-                              className={`p-4 rounded-2xl border border-white/5 ${isPast ? 'opacity-60' : ''}`}
+                              tint={isDark ? 'dark' : 'light'}
+                              className={`p-4 rounded-2xl border border-black/5 dark:border-white/5 ${isPast ? 'opacity-60' : ''}`}
                             >
                               <View className="flex-row items-start justify-between mb-2">
                                 <View className="flex-1 mr-2">
-                                  <Text className="text-white font-semibold" numberOfLines={1}>
+                                  <Text className="text-neutral-950 dark:text-white font-semibold">
                                     {res.espacio_nombre || 'Espacio reservado'}
                                   </Text>
                                 </View>
@@ -250,12 +252,12 @@ export default function ReservationsScreen() {
 
                               <View className="flex-row items-center gap-4">
                                 <View className="flex-row items-center gap-1.5">
-                                  <Calendar color="#a1a1aa" size={14} />
-                                  <Text className="text-neutral-400 text-sm">
+                                  <Calendar color={iconMuted} size={14} />
+                                  <Text className="text-neutral-600 dark:text-neutral-400 text-sm">
                                     {formatDate(res.fecha_inicio)}
                                   </Text>
                                 </View>
-                                <Text className="text-neutral-400 text-sm">
+                                <Text className="text-neutral-600 dark:text-neutral-400 text-sm">
                                   {formatTime(res.fecha_inicio)} - {formatTime(res.fecha_fin)}
                                 </Text>
                               </View>
@@ -266,7 +268,7 @@ export default function ReservationsScreen() {
                                   {res.personas_esperadas !== 1 ? 's' : ''}
                                 </Text>
                                 {res.costo_total != null && (
-                                  <Text className="text-green-400 text-sm font-semibold">
+                                  <Text className="text-green-600 dark:text-green-400 text-sm font-semibold">
                                     ${res.costo_total.toLocaleString()}
                                   </Text>
                                 )}

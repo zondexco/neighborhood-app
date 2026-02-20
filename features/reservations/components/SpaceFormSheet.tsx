@@ -4,6 +4,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/botto
 import { X } from 'lucide-react-native';
 import { createSpace, updateSpace } from '../api';
 import type { Space } from '../types';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface Props {
   space: Space | null; // null = create mode
@@ -13,6 +14,7 @@ interface Props {
 const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) => {
   const snapPoints = useMemo(() => ['60%'], []);
   const isEditing = space !== null;
+  const { isDark, iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -84,75 +86,76 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: '#141414' }}
-      handleIndicatorStyle={{ backgroundColor: '#555' }}
+      backgroundStyle={{ backgroundColor: bgCard }}
+      handleIndicatorStyle={{ backgroundColor: sheetHandle }}
     >
       <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-white text-lg font-bold">
+          <Text className="text-neutral-950 dark:text-white text-lg font-bold">
             {isEditing ? 'Editar Espacio' : 'Nuevo Espacio'}
           </Text>
           <Pressable
             onPress={close}
-            className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+            className="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 items-center justify-center"
           >
-            <X color="white" size={20} />
+            <X color={iconPrimary} size={20} />
           </Pressable>
         </View>
 
         {/* Form */}
         <View className="gap-4">
           <View>
-            <Text className="text-neutral-400 text-sm mb-2">Nombre *</Text>
+            <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Nombre *</Text>
             <TextInput
               value={nombre}
               onChangeText={setNombre}
               placeholder="Ej: Salón Social"
-              placeholderTextColor="#666"
-              className="bg-white/10 rounded-xl px-4 py-3.5 text-white"
+              placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
             />
           </View>
 
           <View>
-            <Text className="text-neutral-400 text-sm mb-2">Descripción</Text>
+            <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Descripción</Text>
             <TextInput
               value={descripcion}
               onChangeText={setDescripcion}
               placeholder="Descripción del espacio..."
-              placeholderTextColor="#666"
+              placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               multiline
               numberOfLines={3}
-              className="bg-white/10 rounded-xl px-4 py-3.5 text-white"
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
               style={{ textAlignVertical: 'top' }}
             />
           </View>
 
           <View>
-            <Text className="text-neutral-400 text-sm mb-2">Costo por hora ($)</Text>
+            <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Costo por hora ($)</Text>
             <TextInput
               value={costoHora}
               onChangeText={setCostoHora}
               placeholder="0"
-              placeholderTextColor="#666"
+              placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               keyboardType="decimal-pad"
-              className="bg-white/10 rounded-xl px-4 py-3.5 text-white"
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
             />
           </View>
 
-          <View className="flex-row items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-            <Text className="text-white font-medium">Activo</Text>
+          <View className="flex-row items-center justify-between bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3">
+            <Text className="text-neutral-950 dark:text-white font-medium">Activo</Text>
             <Switch
               value={activo}
               onValueChange={setActivo}
-              trackColor={{ false: '#333', true: '#3b82f6' }}
+              trackColor={{ false: isDark ? '#333' : '#d4d4d4', true: '#3b82f6' }}
               thumbColor="white"
             />
           </View>
 
-          {error && <Text className="text-red-400 text-sm text-center">{error}</Text>}
+          {error && <Text className="text-red-600 dark:text-red-400 text-sm text-center">{error}</Text>}
 
           <Pressable
             onPress={handleSubmit}
@@ -162,7 +165,7 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
             }`}
           >
             {submitting ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color={activityColor} />
             ) : (
               <Text className="text-white font-bold text-base">
                 {isEditing ? 'Guardar cambios' : 'Crear espacio'}
