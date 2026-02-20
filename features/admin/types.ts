@@ -71,4 +71,7 @@ export interface Condominio {
   ciudad: string;
   telefono?: string;
   email?: string;
+  nit?: string;
+  representante_legal?: string;
+  logo_url?: string;
 }
