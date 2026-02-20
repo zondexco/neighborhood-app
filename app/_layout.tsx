@@ -2,27 +2,38 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, usePathname, useRootNavigationState, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { Appearance, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../global.css';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSettings } from '@/features/settings/useSettings';
+import { SettingsProvider } from '@/features/settings/SettingsProvider';
 
 export const unstable_settings = {
   anchor: '(public)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
   const navigationState = useRootNavigationState();
   const isAuthenticated = useAuth((state) => state.isAuthenticated);
   const hasHydrated = useAuth((state) => state.hasHydrated);
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const theme = useSettings((s) => s.theme);
+  const settingsHydrated = useSettings((s) => s.hasHydrated);
+  const isDark = theme === 'dark';
+
+  // Sync theme to native OS appearance so BlurView, GlassView and StatusBar respond
+  useEffect(() => {
+    if (settingsHydrated) {
+      Appearance.setColorScheme(theme);
+    }
+  }, [theme, settingsHydrated]);
 
   useEffect(() => {
     if (!hasHydrated || !navigationState?.key) {
@@ -61,17 +72,21 @@ export default function RootLayout() {
   const RootWrapper = Platform.OS === 'web' ? View : GestureHandlerRootView;
 
   return (
-    <RootWrapper style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(public)" options={{ headerShown: false }} />
-            <Stack.Screen name="(app)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </RootWrapper>
+    <SettingsProvider>
+      <RootWrapper style={{ flex: 1 }}>
+        <View className={`${isDark ? 'dark ' : ''}flex-1`}>
+          <SafeAreaProvider>
+            <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+              <Stack>
+                <Stack.Screen name="(public)" options={{ headerShown: false }} />
+                <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              </Stack>
+              <StatusBar style={isDark ? 'light' : 'dark'} />
+            </ThemeProvider>
+          </SafeAreaProvider>
+        </View>
+      </RootWrapper>
+    </SettingsProvider>
   );
 }
