@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { syncBiometricRefreshToken } from '@/features/auth/hooks/useBiometric';
 
 const normalizeBaseURL = (url: string) => url.replace(/\/+$/, '');
 
@@ -124,6 +125,9 @@ api.interceptors.response.use(
           role: refreshed.role,
           isAdmin: refreshed.is_admin,
         });
+
+        // Keep biometric SecureStore token in sync (fire-and-forget)
+        syncBiometricRefreshToken(refreshed.refresh_token).catch(() => {});
 
         notifyTokenRefreshed(refreshed.token);
 

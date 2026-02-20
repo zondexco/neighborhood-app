@@ -15,6 +15,7 @@ interface AuthSession {
   condominioName?: string;
   nombre?: string;
   apellido?: string;
+  apartmentId?: string | null;
 }
 
 export interface AuthState {
@@ -28,6 +29,7 @@ export interface AuthState {
   condominioName: string | null;
   nombre: string | null;
   apellido: string | null;
+  apartmentId: string | null;
   isAuthenticated: boolean;
   hasHydrated: boolean;
   emailTemp: string;
@@ -51,6 +53,7 @@ export const useAuth = create<AuthState>()(
       condominioName: null,
       nombre: null,
       apellido: null,
+      apartmentId: null,
       isAuthenticated: false,
       hasHydrated: false,
       emailTemp: '',
@@ -68,6 +71,7 @@ export const useAuth = create<AuthState>()(
           condominioName: session.condominioName ?? null,
           nombre: session.nombre ?? null,
           apellido: session.apellido ?? null,
+          apartmentId: session.apartmentId ?? null,
           isAuthenticated: true,
         }),
       updateSession: (session) =>
@@ -82,6 +86,7 @@ export const useAuth = create<AuthState>()(
           condominioName: session.condominioName ?? state.condominioName,
           nombre: session.nombre ?? state.nombre,
           apellido: session.apellido ?? state.apellido,
+          apartmentId: session.apartmentId !== undefined ? (session.apartmentId ?? null) : state.apartmentId,
           isAuthenticated: true,
         })),
       logout: () =>
@@ -96,6 +101,7 @@ export const useAuth = create<AuthState>()(
           condominioName: null,
           nombre: null,
           apellido: null,
+          apartmentId: null,
           isAuthenticated: false,
           emailTemp: '',
         }),
@@ -114,6 +120,7 @@ export const useAuth = create<AuthState>()(
         condominioName: state.condominioName,
         nombre: state.nombre,
         apellido: state.apellido,
+        apartmentId: state.apartmentId,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
