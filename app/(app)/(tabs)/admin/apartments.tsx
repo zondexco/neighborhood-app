@@ -113,7 +113,7 @@ export default function ApartmentsScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="pb-6">
             {/* Title */}
             <View className="flex-row items-center gap-3 mb-5">

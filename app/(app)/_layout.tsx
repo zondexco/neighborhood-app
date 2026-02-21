@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LiquidView } from '@/components/native/LiquidView';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import DisguiseBanner from '@/components/DisguiseBanner';
 
 export default function AppLayout() {
   const { isDark, headerBg, headerTint } = useThemeColors();
@@ -30,6 +31,7 @@ export default function AppLayout() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      <DisguiseBanner />
     </View>
   );
 }

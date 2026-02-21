@@ -68,3 +68,10 @@ export async function fetchCondominio(): Promise<Condominio> {
   const res = await api.get('/admin/condominio');
   return res.data;
 }
+
+export async function updateAdminCondominio(
+  payload: Partial<{ nombre: string; direccion: string; ciudad: string; telefono: string; email: string; nit: string; representante_legal: string; permite_soporte: boolean }>,
+): Promise<Condominio> {
+  const res = await api.put('/admin/condominio', payload);
+  return res.data;
+}

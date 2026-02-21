@@ -33,16 +33,21 @@ export interface AuthState {
   isAuthenticated: boolean;
   hasHydrated: boolean;
   emailTemp: string;
+  // Disguise (impersonation) state
+  isDisguised: boolean;
+  originalSession: AuthSession | null;
   setEmailTemp: (email: string) => void;
   login: (session: AuthSession) => void;
   updateSession: (session: AuthSession) => void;
   logout: () => void;
   setHasHydrated: (value: boolean) => void;
+  startDisguise: (session: AuthSession) => void;
+  endDisguise: () => void;
 }
 
 export const useAuth = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       refreshToken: null,
       userId: null,
@@ -57,6 +62,8 @@ export const useAuth = create<AuthState>()(
       isAuthenticated: false,
       hasHydrated: false,
       emailTemp: '',
+      isDisguised: false,
+      originalSession: null,
       setEmailTemp: (email) => set({ emailTemp: email }),
       setHasHydrated: (value) => set({ hasHydrated: value }),
       login: (session) =>
@@ -104,7 +111,61 @@ export const useAuth = create<AuthState>()(
           apartmentId: null,
           isAuthenticated: false,
           emailTemp: '',
+          isDisguised: false,
+          originalSession: null,
         }),
+      startDisguise: (session) => {
+        const state = get();
+        // Save current session before switching
+        const original: AuthSession = {
+          token: state.token!,
+          refreshToken: state.refreshToken!,
+          userId: state.userId ?? undefined,
+          email: state.email ?? undefined,
+          role: state.role ?? undefined,
+          isAdmin: state.isAdmin,
+          condominioId: state.condominioId ?? undefined,
+          condominioName: state.condominioName ?? undefined,
+          nombre: state.nombre ?? undefined,
+          apellido: state.apellido ?? undefined,
+          apartmentId: state.apartmentId,
+        };
+        set({
+          token: session.token,
+          refreshToken: session.refreshToken,
+          userId: session.userId ?? state.userId,
+          email: session.email ?? state.email,
+          role: session.role ?? state.role,
+          isAdmin: Boolean(session.isAdmin),
+          condominioId: session.condominioId ?? null,
+          condominioName: session.condominioName ?? null,
+          nombre: session.nombre ?? state.nombre,
+          apellido: session.apellido ?? state.apellido,
+          apartmentId: session.apartmentId ?? null,
+          isDisguised: true,
+          originalSession: original,
+        });
+      },
+      endDisguise: () => {
+        const state = get();
+        const original = state.originalSession;
+        if (!original) return;
+        set({
+          token: original.token,
+          refreshToken: original.refreshToken,
+          userId: original.userId ?? null,
+          email: original.email ?? null,
+          role: original.role ?? null,
+          isAdmin: Boolean(original.isAdmin),
+          condominioId: original.condominioId ?? null,
+          condominioName: original.condominioName ?? null,
+          nombre: original.nombre ?? null,
+          apellido: original.apellido ?? null,
+          apartmentId: original.apartmentId ?? null,
+          isDisguised: false,
+          originalSession: null,
+        });
+      },
     }),
     {
       name: AUTH_STORAGE_KEY,
@@ -122,6 +183,8 @@ export const useAuth = create<AuthState>()(
         apellido: state.apellido,
         apartmentId: state.apartmentId,
         isAuthenticated: state.isAuthenticated,
+        isDisguised: state.isDisguised,
+        originalSession: state.originalSession,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

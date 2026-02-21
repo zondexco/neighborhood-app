@@ -59,6 +59,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
         <GlassView
           style={StyleSheet.absoluteFillObject}
           glassEffectStyle={toGlassEffectStyle(tint)}
+          pointerEvents="none"
         />
         {children}
       </View>

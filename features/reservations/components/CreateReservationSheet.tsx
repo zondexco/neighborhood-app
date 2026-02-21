@@ -6,11 +6,10 @@ import {
   ActivityIndicator,
   Platform,
   TextInput,
-  ScrollView,
 } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Calendar, Clock, Users, MapPin, ChevronLeft, X } from 'lucide-react-native';
+import { Calendar, Clock, Users, MapPin, ChevronLeft, X, Timer } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { fetchSpaces, createReservation } from '../api';
 import type { Space, CreateReservationPayload } from '../types';
@@ -21,6 +20,17 @@ interface Props {
 }
 
 type Step = 'space' | 'datetime' | 'people' | 'confirm';
+
+const DURATION_OPTIONS = [
+  { label: '30 min', value: 0.5 },
+  { label: '1 hora', value: 1 },
+  { label: '1.5 horas', value: 1.5 },
+  { label: '2 horas', value: 2 },
+  { label: '3 horas', value: 3 },
+  { label: '4 horas', value: 4 },
+  { label: '6 horas', value: 6 },
+  { label: '8 horas', value: 8 },
+];
 
 const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, ref) => {
   const snapPoints = useMemo(() => ['92%'], []);
@@ -42,19 +52,15 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     d.setHours(9, 0, 0, 0);
     return d;
   });
-  const [endTime, setEndTime] = useState(() => {
-    const d = new Date();
-    d.setHours(11, 0, 0, 0);
-    return d;
-  });
+  const [durationHours, setDurationHours] = useState(2);
   const [people, setPeople] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Picker visibility (Android only)
   const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
   const [showStartPicker, setShowStartPicker] = useState(Platform.OS === 'ios');
-  const [showEndPicker, setShowEndPicker] = useState(Platform.OS === 'ios');
 
   const loadSpaces = useCallback(async () => {
     setLoadingSpaces(true);
@@ -72,15 +78,17 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     loadSpaces();
   }, [loadSpaces]);
 
-  const estimatedHours = useMemo(() => {
-    const diffMs = endTime.getTime() - startTime.getTime();
-    return Math.max(Math.ceil(diffMs / (1000 * 60 * 60)), 0);
-  }, [startTime, endTime]);
+  // Computed end time from start + duration
+  const endTime = useMemo(() => {
+    const end = new Date(startTime);
+    end.setMinutes(end.getMinutes() + durationHours * 60);
+    return end;
+  }, [startTime, durationHours]);
 
   const estimatedCost = useMemo(() => {
     if (!selectedSpace?.costo_hora) return null;
-    return selectedSpace.costo_hora * estimatedHours;
-  }, [selectedSpace, estimatedHours]);
+    return selectedSpace.costo_hora * durationHours;
+  }, [selectedSpace, durationHours]);
 
   const resetForm = useCallback(() => {
     setStep('space');
@@ -92,12 +100,15 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     const start = new Date();
     start.setHours(9, 0, 0, 0);
     setStartTime(start);
-    const end = new Date();
-    end.setHours(11, 0, 0, 0);
-    setEndTime(end);
+    setDurationHours(2);
     setPeople('');
     setError(null);
   }, []);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setSheetOpen(index >= 0);
+    if (index === -1) resetForm();
+  }, [resetForm]);
 
   const handleSubmit = useCallback(async () => {
     if (!selectedSpace) return;
@@ -112,9 +123,9 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     const fechaFin = new Date(date);
     fechaFin.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
 
+    // Handle overnight (end time past midnight)
     if (fechaFin <= fechaInicio) {
-      setError('La hora de fin debe ser posterior a la hora de inicio');
-      return;
+      fechaFin.setDate(fechaFin.getDate() + 1);
     }
 
     const payload: CreateReservationPayload = {
@@ -148,16 +159,20 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     if (selected) setStartTime(selected);
   };
 
-  const handleEndChange = (_: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === 'android') setShowEndPicker(false);
-    if (selected) setEndTime(selected);
-  };
-
   const formatTime = (d: Date) =>
     d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
 
   const formatDate2 = (d: Date) =>
     d.toLocaleDateString('es', { weekday: 'short', day: '2-digit', month: 'short' });
+
+  const formatDuration = (hours: number) => {
+    if (hours < 1) return `${hours * 60} min`;
+    if (hours === 1) return '1 hora';
+    if (hours % 1 === 0) return `${hours} horas`;
+    const h = Math.floor(hours);
+    const m = (hours % 1) * 60;
+    return `${h}h ${m}min`;
+  };
 
   const renderBackdrop = useCallback(
     (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
@@ -174,11 +189,14 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
-      onChange={(index) => {
-        if (index === -1) resetForm();
-      }}
+      onChange={handleSheetChange}
+      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
     >
-      <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
+      <BottomSheetScrollView
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
           {step !== 'space' ? (
@@ -223,7 +241,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
 
         {/* Step: Select Space */}
         {step === 'space' && (
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <View>
             <View className="flex-row items-center gap-2 mb-4">
               <MapPin color="#60a5fa" size={18} />
               <Text className="text-neutral-950 dark:text-white font-semibold text-base">Selecciona un espacio</Text>
@@ -235,7 +253,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                 No hay espacios disponibles
               </Text>
             ) : (
-              <View className="gap-3 pb-8">
+              <View className="gap-3">
                 {spaces.map((space) => (
                   <Pressable
                     key={space.id}
@@ -265,99 +283,128 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                 ))}
               </View>
             )}
-          </ScrollView>
+          </View>
         )}
 
         {/* Step: Date & Time */}
         {step === 'datetime' && (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View className="gap-6 pb-8">
-              {/* Date */}
-              <View>
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Calendar color="#60a5fa" size={18} />
-                  <Text className="text-neutral-950 dark:text-white font-semibold">Fecha</Text>
-                </View>
-                {Platform.OS === 'android' && !showDatePicker && (
-                  <Pressable
-                    onPress={() => setShowDatePicker(true)}
-                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
-                  >
-                    <Text className="text-neutral-950 dark:text-white text-base">{formatDate2(date)}</Text>
-                  </Pressable>
-                )}
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                    minimumDate={new Date()}
-                    onChange={handleDateChange}
-                    themeVariant={isDark ? 'dark' : 'light'}
-                  />
-                )}
+          <View className="gap-6">
+            {/* Date */}
+            <View>
+              <View className="flex-row items-center gap-2 mb-3">
+                <Calendar color="#60a5fa" size={18} />
+                <Text className="text-neutral-950 dark:text-white font-semibold">Fecha</Text>
               </View>
-
-              {/* Start Time */}
-              <View>
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Clock color="#4ade80" size={18} />
-                  <Text className="text-neutral-950 dark:text-white font-semibold">Hora de inicio</Text>
-                </View>
-                {Platform.OS === 'android' && !showStartPicker && (
-                  <Pressable
-                    onPress={() => setShowStartPicker(true)}
-                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
-                  >
-                    <Text className="text-neutral-950 dark:text-white text-base">{formatTime(startTime)}</Text>
-                  </Pressable>
-                )}
-                {showStartPicker && (
-                  <DateTimePicker
-                    value={startTime}
-                    mode="time"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    minuteInterval={30}
-                    onChange={handleStartChange}
-                    themeVariant={isDark ? 'dark' : 'light'}
-                  />
-                )}
-              </View>
-
-              {/* End Time */}
-              <View>
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Clock color="#f87171" size={18} />
-                  <Text className="text-neutral-950 dark:text-white font-semibold">Hora de fin</Text>
-                </View>
-                {Platform.OS === 'android' && !showEndPicker && (
-                  <Pressable
-                    onPress={() => setShowEndPicker(true)}
-                    className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
-                  >
-                    <Text className="text-neutral-950 dark:text-white text-base">{formatTime(endTime)}</Text>
-                  </Pressable>
-                )}
-                {showEndPicker && (
-                  <DateTimePicker
-                    value={endTime}
-                    mode="time"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    minuteInterval={30}
-                    onChange={handleEndChange}
-                    themeVariant={isDark ? 'dark' : 'light'}
-                  />
-                )}
-              </View>
-
-              <Pressable
-                onPress={() => setStep('people')}
-                className="bg-blue-600 rounded-2xl py-4 items-center mt-2"
-              >
-                <Text className="text-white font-bold text-base">Continuar</Text>
-              </Pressable>
+              {Platform.OS === 'android' && !showDatePicker && (
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
+                >
+                  <Text className="text-neutral-950 dark:text-white text-base">{formatDate2(date)}</Text>
+                </Pressable>
+              )}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'compact' : 'default'}
+                  minimumDate={new Date()}
+                  onChange={handleDateChange}
+                  themeVariant={isDark ? 'dark' : 'light'}
+                />
+              )}
             </View>
-          </ScrollView>
+
+            {/* Start Time */}
+            <View>
+              <View className="flex-row items-center gap-2 mb-3">
+                <Clock color="#4ade80" size={18} />
+                <Text className="text-neutral-950 dark:text-white font-semibold">Hora de inicio</Text>
+              </View>
+              {Platform.OS === 'android' && !showStartPicker && (
+                <Pressable
+                  onPress={() => setShowStartPicker(true)}
+                  className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
+                >
+                  <Text className="text-neutral-950 dark:text-white text-base">{formatTime(startTime)}</Text>
+                </Pressable>
+              )}
+              {showStartPicker && (
+                <DateTimePicker
+                  value={startTime}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'compact' : 'default'}
+                  minuteInterval={30}
+                  onChange={handleStartChange}
+                  themeVariant={isDark ? 'dark' : 'light'}
+                />
+              )}
+            </View>
+
+            {/* Duration */}
+            <View>
+              <View className="flex-row items-center gap-2 mb-3">
+                <Timer color="#fb923c" size={18} />
+                <Text className="text-neutral-950 dark:text-white font-semibold">Duración</Text>
+              </View>
+              <View className="flex-row flex-wrap gap-2">
+                {DURATION_OPTIONS.map((opt) => {
+                  const selected = durationHours === opt.value;
+                  return (
+                    <Pressable
+                      key={opt.value}
+                      onPress={() => setDurationHours(opt.value)}
+                      className={`px-4 py-2.5 rounded-xl border ${
+                        selected
+                          ? 'bg-blue-600 border-blue-600'
+                          : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10'
+                      }`}
+                    >
+                      <Text
+                        className={`text-sm font-semibold ${
+                          selected ? 'text-white' : 'text-neutral-950 dark:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Computed end time preview */}
+            <LiquidView
+              intensity={15}
+              tint="dark"
+              className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+            >
+              <Text className="text-neutral-500 dark:text-neutral-400 text-sm">Hora de fin estimada</Text>
+              <Text className="text-neutral-950 dark:text-white font-semibold">
+                {formatTime(endTime)}
+              </Text>
+            </LiquidView>
+
+            {estimatedCost != null && (
+              <LiquidView
+                intensity={15}
+                tint="dark"
+                className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+              >
+                <Text className="text-neutral-500 dark:text-neutral-400 text-sm">Costo estimado</Text>
+                <Text className="text-green-600 dark:text-green-400 font-bold">
+                  ${estimatedCost.toLocaleString()}
+                </Text>
+              </LiquidView>
+            )}
+
+            <Pressable
+              onPress={() => setStep('people')}
+              className="bg-blue-600 rounded-2xl py-4 items-center mt-2"
+            >
+              <Text className="text-white font-bold text-base">Continuar</Text>
+            </Pressable>
+          </View>
         )}
 
         {/* Step: People */}
@@ -415,7 +462,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-neutral-600 dark:text-neutral-400">Duración</Text>
-                <Text className="text-neutral-950 dark:text-white font-medium">{estimatedHours}h</Text>
+                <Text className="text-neutral-950 dark:text-white font-medium">{formatDuration(durationHours)}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-neutral-600 dark:text-neutral-400">Personas</Text>
@@ -446,7 +493,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
             </Pressable>
           </View>
         )}
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheet>
   );
 });

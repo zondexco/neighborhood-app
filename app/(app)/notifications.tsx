@@ -5,11 +5,9 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
-  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
-import { Stack } from 'expo-router';
+import { useFocusEffect, router, Stack } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {
   ArrowLeft,
@@ -24,7 +22,6 @@ import {
   MessageCircle,
 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
-import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { fetchCommunications, markCommunicationRead } from '@/features/communications/api';
 import CommunicationDetailSheet from '@/features/communications/components/CommunicationDetailSheet';
@@ -70,8 +67,8 @@ export default function NotificationsScreen() {
     try {
       const res = await fetchCommunications(1, 50);
       setCommunications(res.data ?? []);
-    } catch {
-      // silent
+    } catch (e) {
+      console.warn('[Notifications] fetch error:', e);
     } finally {
       setLoading(false);
     }
@@ -89,7 +86,6 @@ export default function NotificationsScreen() {
   }, []);
 
   const handleRead = useCallback(() => {
-    // Refresh list to update read status
     load();
   }, [load]);
 
@@ -162,18 +158,22 @@ export default function NotificationsScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Notificaciones',
-          headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={12} style={{ marginRight: 8 }}>
-              <ArrowLeft color={iconPrimary} size={22} />
-            </Pressable>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-white dark:bg-black">
-        <SafeAreaView className="flex-1" edges={['bottom']}>
+        <SafeAreaView className="flex-1">
+          {/* Header */}
+          <View className="px-5 pt-4 pb-3">
+            <View className="flex-row items-center gap-3">
+              <Pressable onPress={() => router.back()} hitSlop={12}>
+                <ArrowLeft color={iconPrimary} size={22} />
+              </Pressable>
+              <Text className="text-neutral-950 dark:text-white text-xl font-bold">
+                Notificaciones
+              </Text>
+            </View>
+          </View>
+
+          {/* Content */}
           {loading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color={activityColor} />

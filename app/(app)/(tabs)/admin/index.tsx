@@ -6,16 +6,18 @@ import {
   Pressable,
   ActivityIndicator,
   useWindowDimensions,
+  Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { Shield, Users, Building2, RefreshCw, MessageSquare, Megaphone, Edit3 } from 'lucide-react-native';
+import { Shield, Users, Building2, RefreshCw, MessageSquare, Megaphone, Edit3, ShieldCheck, Calendar } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { AuthState } from '@/features/auth/hooks/useAuth';
-import { fetchAdminStats, fetchCondominio } from '@/features/admin/api';
+import { fetchAdminStats, fetchCondominio, updateAdminCondominio } from '@/features/admin/api';
 import type { AdminStats, Condominio } from '@/features/admin/types';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import CondominioEditSheet from '@/features/admin/components/CondominioEditSheet';
@@ -24,11 +26,14 @@ export default function AdminDashboard() {
   const { width } = useWindowDimensions();
   const { isDark, iconMuted, activityColor } = useThemeColors();
   const condominioName = useAuth((s: AuthState) => s.condominioName);
+  const role = useAuth((s: AuthState) => s.role);
 
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [condominio, setCondominio] = useState<Condominio | null>(null);
   const [loading, setLoading] = useState(true);
+  const [togglingSupport, setTogglingSupport] = useState(false);
   const editSheetRef = useRef<BottomSheet>(null);
+  const isAdminRole = role === 'administrador' || role === 'admin';
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -83,12 +88,21 @@ export default function AdminDashboard() {
       bg: 'bg-orange-500/15',
       route: '/admin/communications',
     },
+    {
+      title: 'Reservas',
+      subtitle: `${stats?.reservas_activas ?? '—'} activas`,
+      icon: Calendar,
+      color: '#60a5fa',
+      bg: 'bg-blue-500/15',
+      route: '/admin/reservations',
+    },
   ];
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
+        pointerEvents="none"
         className="absolute top-0 right-0 bg-violet-600/15 rounded-full"
         style={{
           width: Math.min(width * 0.7, 400),
@@ -98,7 +112,7 @@ export default function AdminDashboard() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="py-6">
             {/* Header */}
             <View className="flex-row items-center gap-3 mb-6">
@@ -239,6 +253,44 @@ export default function AdminDashboard() {
                         ))}
                     </LiquidView>
                   </View>
+                )}
+
+                {/* Soporte técnico toggle — only visible for admin role (devs already have access) */}
+                {condominio && isAdminRole && (
+                  <LiquidView
+                    intensity={15}
+                    tint={isDark ? 'dark' : 'light'}
+                    className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+                  >
+                    <View className="flex-row items-center gap-3 flex-1 mr-3">
+                      <ShieldCheck color="#06b6d4" size={20} />
+                      <View className="flex-1">
+                        <Text className="text-neutral-950 dark:text-white font-semibold text-sm">
+                          Soporte técnico
+                        </Text>
+                        <Text className="text-neutral-500 dark:text-neutral-400 text-xs">
+                          Permitir acceso al equipo de soporte
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={condominio.permite_soporte}
+                      onValueChange={async (value) => {
+                        setTogglingSupport(true);
+                        try {
+                          await updateAdminCondominio({ permite_soporte: value });
+                          setCondominio((prev) => prev ? { ...prev, permite_soporte: value } : prev);
+                        } catch {
+                          Alert.alert('Error', 'No se pudo actualizar');
+                        } finally {
+                          setTogglingSupport(false);
+                        }
+                      }}
+                      disabled={togglingSupport}
+                      trackColor={{ false: isDark ? '#333' : '#d4d4d4', true: '#06b6d4' }}
+                      thumbColor="white"
+                    />
+                  </LiquidView>
                 )}
               </View>
             )}

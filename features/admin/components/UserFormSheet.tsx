@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Pressable,
-  TextInput,
   Alert,
   ActivityIndicator,
   ScrollView,
@@ -11,18 +10,21 @@ import {
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
+  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { X, ChevronDown } from 'lucide-react-native';
+import { X, ChevronDown, Building2, Shield } from 'lucide-react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { createAdminUser, updateAdminUser, deleteAdminUser } from '../api';
-import type { AdminUser, CreateUserPayload, UpdateUserPayload } from '../types';
+import { createAdminUser, updateAdminUser, deleteAdminUser, fetchAdminApartments } from '../api';
+import type { AdminUser, AdminApartment, CreateUserPayload, UpdateUserPayload } from '../types';
 
 interface Props {
   user: AdminUser | null; // null = create mode
+  callerRole: string | null;
+  callerUserId: string | null;
   onSaved: () => void;
 }
 
-const ROL_OPTIONS = [
+const ALL_ROL_OPTIONS = [
   { value: 'residente', label: 'Residente' },
   { value: 'empleado', label: 'Empleado' },
   { value: 'administrador', label: 'Administrador' },
@@ -35,9 +37,14 @@ const ESTADO_OPTIONS = [
   { value: 'suspendido', label: 'Suspendido' },
 ];
 
-const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) => {
-  const snapPoints = useMemo(() => ['85%'], []);
+const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, callerRole, callerUserId, onSaved }, ref) => {
+  const snapPoints = useMemo(() => ['90%'], []);
   const isEditing = user !== null;
+  const isDev = callerRole === 'dev';
+  const isTargetProtected = isEditing && (user.rol === 'administrador' || user.rol === 'admin' || user.rol === 'dev');
+  const canEdit = isDev || !isTargetProtected;
+  const canDelete = canEdit && !(isEditing && user.id === callerUserId);
+  const ROL_OPTIONS = isDev ? ALL_ROL_OPTIONS : ALL_ROL_OPTIONS.filter((o) => o.value !== 'administrador');
   const { isDark, iconPrimary, iconMuted, activityColor, bgCard, sheetHandle, placeholderText } =
     useThemeColors();
 
@@ -47,11 +54,35 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
   const [telefono, setTelefono] = useState('');
   const [rol, setRol] = useState('residente');
   const [estado, setEstado] = useState('activo');
+  const [apartamentoId, setApartamentoId] = useState<string | null>(null);
   const [showRolPicker, setShowRolPicker] = useState(false);
   const [showEstadoPicker, setShowEstadoPicker] = useState(false);
+  const [showApartmentPicker, setShowApartmentPicker] = useState(false);
+  const [apartments, setApartments] = useState<AdminApartment[]>([]);
+  const [loadingApts, setLoadingApts] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setSheetOpen(index >= 0);
+    if (index >= 0 && apartments.length === 0) {
+      loadApartments();
+    }
+  }, [apartments.length]);
+
+  const loadApartments = useCallback(async () => {
+    setLoadingApts(true);
+    try {
+      const res = await fetchAdminApartments();
+      setApartments(res.data ?? []);
+    } catch {
+      // silent
+    } finally {
+      setLoadingApts(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +92,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
       setTelefono(user.telefono ?? '');
       setRol(user.rol);
       setEstado(user.estado);
+      setApartamentoId(user.apartamento_id ?? null);
     } else {
       setNombre('');
       setApellido('');
@@ -68,11 +100,22 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
       setTelefono('');
       setRol('residente');
       setEstado('activo');
+      setApartamentoId(null);
     }
     setError(null);
     setShowRolPicker(false);
     setShowEstadoPicker(false);
+    setShowApartmentPicker(false);
   }, [user]);
+
+  const selectedApt = useMemo(
+    () => apartments.find((a) => a.id === apartamentoId),
+    [apartments, apartamentoId],
+  );
+
+  const aptLabel = selectedApt
+    ? `${selectedApt.numero}${selectedApt.torre ? ` - Torre ${selectedApt.torre}` : ''}${selectedApt.bloque ? ` - ${selectedApt.bloque}` : ''}`
+    : null;
 
   const close = () => (ref as React.RefObject<BottomSheet>)?.current?.close();
 
@@ -92,6 +135,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
           telefono: telefono.trim() || undefined,
           rol,
           estado,
+          apartamento_id: apartamentoId,
         };
         await updateAdminUser(user.id, payload);
         close();
@@ -104,11 +148,11 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
           telefono: telefono.trim() || undefined,
           rol,
           estado,
+          apartamento_id: apartamentoId ?? undefined,
         };
         const result = await createAdminUser(payload);
         close();
         onSaved();
-        // Show PIN to admin after closing sheet
         setTimeout(() => {
           Alert.alert(
             'Usuario creado',
@@ -122,7 +166,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
     } finally {
       setSubmitting(false);
     }
-  }, [nombre, apellido, email, telefono, rol, estado, isEditing, user, onSaved, ref]);
+  }, [nombre, apellido, email, telefono, rol, estado, apartamentoId, isEditing, user, onSaved, ref]);
 
   const handleDelete = useCallback(() => {
     if (!user) return;
@@ -156,8 +200,20 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
     [],
   );
 
-  const inputClass =
-    'bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white';
+  const closeAllPickers = () => {
+    setShowRolPicker(false);
+    setShowEstadoPicker(false);
+    setShowApartmentPicker(false);
+  };
+
+  const inputStyle = {
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: isDark ? '#fff' : '#0a0a0a',
+    fontSize: 15,
+  };
   const labelClass = 'text-neutral-600 dark:text-neutral-400 text-sm mb-2';
 
   const rolLabel = ROL_OPTIONS.find((o) => o.value === rol)?.label ?? rol;
@@ -173,8 +229,13 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      onChange={handleSheetChange}
+      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+      android_keyboardInputMode="adjustResize"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
-      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}>
+      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6 mt-2">
           <Text className="text-neutral-950 dark:text-white text-lg font-bold">
@@ -188,63 +249,141 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
           </Pressable>
         </View>
 
-        <View className="gap-4">
+        {/* Protected user banner */}
+        {isEditing && !canEdit && (
+          <View className="bg-amber-500/15 border border-amber-500/30 rounded-xl px-4 py-3 mb-4 flex-row items-center gap-2">
+            <Shield color="#f59e0b" size={16} />
+            <Text className="text-amber-700 dark:text-amber-400 text-sm flex-1">
+              Este usuario tiene un rol protegido y no puede ser modificado.
+            </Text>
+          </View>
+        )}
+
+        {isEditing && canEdit && !canDelete && (
+          <View className="bg-blue-500/15 border border-blue-500/30 rounded-xl px-4 py-3 mb-4 flex-row items-center gap-2">
+            <Shield color="#60a5fa" size={16} />
+            <Text className="text-blue-700 dark:text-blue-400 text-sm flex-1">
+              No puedes eliminarte a ti mismo.
+            </Text>
+          </View>
+        )}
+
+        <View className="gap-4" style={!canEdit ? { opacity: 0.5 } : undefined} pointerEvents={canEdit ? 'auto' : 'none'}>
           {/* Nombre */}
           <View>
             <Text className={labelClass}>Nombre *</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={nombre}
               onChangeText={setNombre}
               placeholder="Nombre"
               placeholderTextColor={placeholderText}
-              className={inputClass}
+              style={inputStyle}
             />
           </View>
 
           {/* Apellido */}
           <View>
             <Text className={labelClass}>Apellido *</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={apellido}
               onChangeText={setApellido}
               placeholder="Apellido"
               placeholderTextColor={placeholderText}
-              className={inputClass}
+              style={inputStyle}
             />
           </View>
 
           {/* Email */}
           <View>
             <Text className={labelClass}>Email *</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={email}
               onChangeText={setEmail}
               placeholder="correo@ejemplo.com"
               placeholderTextColor={placeholderText}
               keyboardType="email-address"
               autoCapitalize="none"
-              className={inputClass}
+              style={inputStyle}
             />
           </View>
 
           {/* Teléfono */}
           <View>
             <Text className={labelClass}>Teléfono</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={telefono}
               onChangeText={setTelefono}
               placeholder="(opcional)"
               placeholderTextColor={placeholderText}
               keyboardType="phone-pad"
-              className={inputClass}
+              style={inputStyle}
             />
+          </View>
+
+          {/* Apartamento picker */}
+          <View>
+            <Text className={labelClass}>Apartamento</Text>
+            <Pressable
+              onPress={() => {
+                closeAllPickers();
+                setShowApartmentPicker(!showApartmentPicker);
+              }}
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 flex-row items-center justify-between"
+            >
+              <View className="flex-row items-center gap-2 flex-1">
+                <Building2 color={apartamentoId ? iconPrimary : iconMuted} size={16} />
+                <Text
+                  className={apartamentoId ? 'text-neutral-950 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'}
+                  numberOfLines={1}
+                >
+                  {aptLabel ?? 'Sin asignar'}
+                </Text>
+              </View>
+              <ChevronDown color={iconMuted} size={18} />
+            </Pressable>
+            {showApartmentPicker && (
+              <View className="mt-1 bg-black/5 dark:bg-white/5 rounded-xl overflow-hidden border border-black/10 dark:border-white/10" style={{ maxHeight: 200 }}>
+                {loadingApts ? (
+                  <ActivityIndicator color={activityColor} style={{ padding: 16 }} />
+                ) : (
+                  <ScrollView nestedScrollEnabled>
+                    {/* Option: sin asignar */}
+                    <Pressable
+                      onPress={() => { setApartamentoId(null); setShowApartmentPicker(false); }}
+                      className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${!apartamentoId ? 'bg-violet-500/20' : ''}`}
+                    >
+                      <Text className={!apartamentoId ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-neutral-500 dark:text-neutral-400'}>
+                        Sin asignar
+                      </Text>
+                    </Pressable>
+                    {apartments
+                      .filter((a) => a.estado === 'activo')
+                      .map((apt) => {
+                        const label = `${apt.numero}${apt.torre ? ` - Torre ${apt.torre}` : ''}${apt.bloque ? ` - ${apt.bloque}` : ''}`;
+                        const isSelected = apartamentoId === apt.id;
+                        return (
+                          <Pressable
+                            key={apt.id}
+                            onPress={() => { setApartamentoId(apt.id); setShowApartmentPicker(false); }}
+                            className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${isSelected ? 'bg-violet-500/20' : ''}`}
+                          >
+                            <Text className={isSelected ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-neutral-950 dark:text-white'}>
+                              {label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                  </ScrollView>
+                )}
+              </View>
+            )}
           </View>
 
           {/* Rol picker */}
           <View>
             <Text className={labelClass}>Rol</Text>
             <Pressable
-              onPress={() => { setShowRolPicker(!showRolPicker); setShowEstadoPicker(false); }}
+              onPress={() => { closeAllPickers(); setShowRolPicker(!showRolPicker); }}
               className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 flex-row items-center justify-between"
             >
               <Text className="text-neutral-950 dark:text-white">{rolLabel}</Text>
@@ -273,7 +412,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
           <View>
             <Text className={labelClass}>Estado</Text>
             <Pressable
-              onPress={() => { setShowEstadoPicker(!showEstadoPicker); setShowRolPicker(false); }}
+              onPress={() => { closeAllPickers(); setShowEstadoPicker(!showEstadoPicker); }}
               className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 flex-row items-center justify-between"
             >
               <Text className="text-neutral-950 dark:text-white">{estadoLabel}</Text>
@@ -317,8 +456,8 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, onSaved }, ref) =>
             )}
           </Pressable>
 
-          {/* Delete (edit mode only) */}
-          {isEditing && (
+          {/* Delete (edit mode only, not self, not protected) */}
+          {isEditing && canDelete && (
             <Pressable
               onPress={handleDelete}
               disabled={submitting || deleting}

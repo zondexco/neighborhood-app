@@ -7,6 +7,7 @@ export interface AdminUser {
   rol: string;
   estado: string;
   apartamento_id?: string;
+  apartamento?: string; // label from backend (e.g. "Torre A · Apt 301")
   created_at: string;
 }
 
@@ -74,4 +75,5 @@ export interface Condominio {
   nit?: string;
   representante_legal?: string;
   logo_url?: string;
+  permite_soporte: boolean;
 }

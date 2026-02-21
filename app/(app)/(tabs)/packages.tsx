@@ -177,12 +177,13 @@ export default function PackagesScreen() {
     <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
+        pointerEvents="none"
         className="absolute top-0 left-0 bg-amber-500/15 rounded-full"
         style={{ width: 400, height: 400, transform: [{ translateX: -120 }, { translateY: -150 }] }}
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled" {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="py-6">
 
             {/* Header */}

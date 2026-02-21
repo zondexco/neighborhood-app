@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Calendar, Package, User, Shield } from 'lucide-react-native';
+import { Home, Calendar, Package, User, Shield, Code2 } from 'lucide-react-native';
 import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const hasSidebar = Platform.OS === 'web' && width >= Breakpoints.laptop;
   const isAdmin = useAuth((s: AuthState) => s.isAdmin);
+  const isDev = useAuth((s: AuthState) => s.role === 'dev');
   const {
     isDark,
     headerBg,
@@ -63,6 +64,7 @@ export default function TabLayout() {
           elevation: 0,
           paddingTop: hasSidebar ? 16 : 0,
           paddingBottom: hasSidebar ? 0 : 0,
+          paddingHorizontal: hasSidebar ? 0 : 8,
           shadowColor: '#000',
           shadowOpacity: isDark ? 0.4 : 0.08,
           shadowRadius: isDark ? 20 : 10,
@@ -104,8 +106,7 @@ export default function TabLayout() {
             }
           : {
               borderRadius: 16,
-              marginHorizontal: 4,
-              marginVertical: 4,
+              marginHorizontal: 2,
             },
         tabBarIconStyle: {
           marginTop: hasSidebar ? 0 : 2,
@@ -158,7 +159,16 @@ export default function TabLayout() {
           title: 'Admin',
           tabBarIcon: ({ color }) => <Shield color={color} size={22} />,
           headerShown: false,
-          tabBarButton: isAdmin ? undefined : () => null,
+          href: isAdmin ? '/admin' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="dev"
+        options={{
+          title: 'Dev',
+          tabBarIcon: ({ color }) => <Code2 color={color} size={22} />,
+          headerShown: false,
+          href: isDev ? '/dev' : null,
         }}
       />
     </Tabs>

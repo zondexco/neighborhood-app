@@ -19,7 +19,12 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
   ({ pkg, role, isAdmin, onUpdated, onEdit }, ref) => {
     const snapPoints = useMemo(() => ['65%'], []);
     const [loading, setLoading] = useState(false);
+    const [sheetOpen, setSheetOpen] = useState(false);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
+
+    const handleSheetChange = useCallback((index: number) => {
+      setSheetOpen(index >= 0);
+    }, []);
 
     const isEmpleadoOrAdmin = isAdmin || role === 'empleado';
     const isPending = !pkg?.delivered_at;
@@ -109,6 +114,8 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        onChange={handleSheetChange}
+        containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       >
         <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}>
           {/* Header */}

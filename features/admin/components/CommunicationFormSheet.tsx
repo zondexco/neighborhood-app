@@ -2,14 +2,13 @@ import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 're
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   Alert,
   ActivityIndicator,
   Switch,
   Platform,
 } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { X, ChevronDown, Trash2 } from 'lucide-react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -61,6 +60,11 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [showIconPicker, setShowIconPicker] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [sheetOpen, setSheetOpen] = useState(false);
+
+    const handleSheetChange = useCallback((index: number) => {
+      setSheetOpen(index >= 0);
+    }, []);
 
     useEffect(() => {
       if (communication) {
@@ -160,8 +164,14 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
       [],
     );
 
-    const inputStyle =
-      'bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 text-neutral-950 dark:text-white text-base';
+    const inputStyle = {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      color: isDark ? '#fff' : '#0a0a0a',
+      fontSize: 15,
+    };
 
     const formatDate = (d: Date) =>
       d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -173,10 +183,16 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        onChange={handleSheetChange}
+        containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+        android_keyboardInputMode="adjustResize"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
         <View className="flex-row items-center justify-between px-5 pb-3">
           <Text className="text-neutral-950 dark:text-white text-xl font-bold">
@@ -189,14 +205,15 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
 
         <BottomSheetScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 16 }}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Título */}
           <View>
             <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-2">
               Título *
             </Text>
-            <TextInput
-              className={inputStyle}
+            <BottomSheetTextInput
+              style={inputStyle}
               value={titulo}
               onChangeText={setTitulo}
               placeholder="Título del comunicado"
@@ -209,14 +226,13 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
             <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-2">
               Contenido *
             </Text>
-            <TextInput
-              className={`${inputStyle} min-h-[120px]`}
+            <BottomSheetTextInput
+              style={{ ...inputStyle, minHeight: 120, textAlignVertical: 'top' }}
               value={contenido}
               onChangeText={setContenido}
               placeholder="Escribe el contenido del comunicado..."
               placeholderTextColor={placeholderText}
               multiline
-              textAlignVertical="top"
             />
           </View>
 

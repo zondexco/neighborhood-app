@@ -2,13 +2,12 @@ import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 're
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   ActivityIndicator,
   Alert,
   ScrollView,
 } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { X, ChevronDown } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { createPackage, updatePackage, fetchApartments } from '../api';
@@ -40,6 +39,11 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
     const [carrier, setCarrier] = useState('');
     const [notes, setNotes] = useState('');
     const [saving, setSaving] = useState(false);
+    const [sheetOpen, setSheetOpen] = useState(false);
+
+    const handleSheetChange = useCallback((index: number) => {
+      setSheetOpen(index >= 0);
+    }, []);
 
     const inputStyle = {
       color: isDark ? '#fff' : '#0a0a0a',
@@ -151,8 +155,13 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        onChange={handleSheetChange}
+        containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+        android_keyboardInputMode="adjustResize"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
           {/* Header */}
           <View className="flex-row items-center justify-between mb-6 mt-2">
             <Text className="text-neutral-950 dark:text-white text-lg font-bold">
@@ -229,7 +238,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
             <View>
               <Text className="text-neutral-500 text-xs font-medium mb-1.5 ml-1">Destinatario</Text>
               {showResidentField ? (
-                <TextInput
+                <BottomSheetTextInput
                   value={resident}
                   onChangeText={setResident}
                   placeholder="Nombre del destinatario"
@@ -250,7 +259,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
             <View>
               <Text className="text-neutral-500 text-xs font-medium mb-1.5 ml-1">Transportadora</Text>
               {showCarrierField ? (
-                <TextInput
+                <BottomSheetTextInput
                   value={carrier}
                   onChangeText={setCarrier}
                   placeholder="Ej: Servientrega, Coordinadora..."
@@ -270,7 +279,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
             {/* Notas */}
             <View>
               <Text className="text-neutral-500 text-xs font-medium mb-1.5 ml-1">Notas (opcional)</Text>
-              <TextInput
+              <BottomSheetTextInput
                 value={notes}
                 onChangeText={setNotes}
                 placeholder="Instrucciones especiales, descripción..."

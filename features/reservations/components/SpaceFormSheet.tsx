@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Switch } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import { View, Text, Pressable, ActivityIndicator, Switch } from 'react-native';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { X } from 'lucide-react-native';
 import { createSpace, updateSpace } from '../api';
 import type { Space } from '../types';
@@ -14,7 +14,7 @@ interface Props {
 const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) => {
   const snapPoints = useMemo(() => ['60%'], []);
   const isEditing = space !== null;
-  const { isDark, iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
+  const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } = useThemeColors();
 
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -22,6 +22,11 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
   const [activo, setActivo] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setSheetOpen(index >= 0);
+  }, []);
 
   useEffect(() => {
     if (space) {
@@ -91,6 +96,11 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      onChange={handleSheetChange}
+      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+      android_keyboardInputMode="adjustResize"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
       <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
         {/* Header */}
@@ -110,38 +120,59 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
         <View className="gap-4">
           <View>
             <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Nombre *</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={nombre}
               onChangeText={setNombre}
               placeholder="Ej: Salón Social"
               placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
-              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
+              style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                color: isDark ? '#fff' : '#0a0a0a',
+                fontSize: 15,
+              }}
             />
           </View>
 
           <View>
             <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Descripción</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={descripcion}
               onChangeText={setDescripcion}
               placeholder="Descripción del espacio..."
               placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               multiline
               numberOfLines={3}
-              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
-              style={{ textAlignVertical: 'top' }}
+              style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                color: isDark ? '#fff' : '#0a0a0a',
+                fontSize: 15,
+                textAlignVertical: 'top',
+              }}
             />
           </View>
 
           <View>
             <Text className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Costo por hora ($)</Text>
-            <TextInput
+            <BottomSheetTextInput
               value={costoHora}
               onChangeText={setCostoHora}
               placeholder="0"
               placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               keyboardType="decimal-pad"
-              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3.5 text-neutral-950 dark:text-white"
+              style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                color: isDark ? '#fff' : '#0a0a0a',
+                fontSize: 15,
+              }}
             />
           </View>
 

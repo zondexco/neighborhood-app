@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, Pressable, Alert, ActivityIndicator } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { X } from 'lucide-react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { updateCondominio } from '@/features/communications/api';
@@ -29,6 +29,11 @@ const CondominioEditSheet = forwardRef<BottomSheet, Props>(({ condominio, onSave
   const [nit, setNit] = useState('');
   const [representante, setRepresentante] = useState('');
   const [saving, setSaving] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setSheetOpen(index >= 0);
+  }, []);
 
   useEffect(() => {
     if (condominio) {
@@ -72,8 +77,14 @@ const CondominioEditSheet = forwardRef<BottomSheet, Props>(({ condominio, onSave
     [],
   );
 
-  const inputStyle =
-    'bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 text-neutral-950 dark:text-white text-base';
+  const inputStyle = {
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: isDark ? '#fff' : '#0a0a0a',
+    fontSize: 15,
+  };
 
   const fields = [
     { label: 'Nombre *', value: nombre, setter: setNombre, placeholder: 'Nombre del conjunto' },
@@ -90,10 +101,16 @@ const CondominioEditSheet = forwardRef<BottomSheet, Props>(({ condominio, onSave
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      onChange={handleSheetChange}
+      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+      android_keyboardInputMode="adjustResize"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
       <View className="flex-row items-center justify-between px-5 pb-3">
         <Text className="text-neutral-950 dark:text-white text-xl font-bold">
@@ -107,14 +124,14 @@ const CondominioEditSheet = forwardRef<BottomSheet, Props>(({ condominio, onSave
         </Pressable>
       </View>
 
-      <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 16 }}>
+      <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled">
         {fields.map((field) => (
           <View key={field.label}>
             <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-2">
               {field.label}
             </Text>
-            <TextInput
-              className={inputStyle}
+            <BottomSheetTextInput
+              style={inputStyle}
               value={field.value}
               onChangeText={field.setter}
               placeholder={field.placeholder}

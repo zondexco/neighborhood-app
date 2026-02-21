@@ -18,6 +18,11 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
 
   const [condominio, setCondominio] = useState<CondominioFull | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setSheetOpen(index >= 0);
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -59,10 +64,13 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      onChange={handleSheetChange}
+      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
     >
       <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         <Text className="text-neutral-950 dark:text-white text-xl font-bold mb-1">

@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   FlatList,
   TextInput,
   Pressable,
+  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -56,9 +57,77 @@ const ICON_COLORS: Record<string, string> = {
   zap: '#facc15',
 };
 
+const ICON_FILTER_OPTIONS = [
+  { key: 'all', label: 'Todos', icon: null },
+  { key: 'megaphone', label: 'Aviso', icon: Megaphone },
+  { key: 'info', label: 'Info', icon: Info },
+  { key: 'alert-triangle', label: 'Alerta', icon: AlertTriangle },
+  { key: 'calendar', label: 'Evento', icon: Calendar },
+  { key: 'wrench', label: 'Manten.', icon: Wrench },
+  { key: 'zap', label: 'Urgente', icon: Zap },
+  { key: 'heart', label: 'Bienestar', icon: Heart },
+  { key: 'shield', label: 'Seguridad', icon: Shield },
+] as const;
+
+const DATE_FILTER_OPTIONS = [
+  { key: 'all', label: 'Cualquier fecha' },
+  { key: 'today', label: 'Hoy' },
+  { key: '7d', label: 'Últimos 7 días' },
+  { key: '30d', label: 'Últimos 30 días' },
+] as const;
+
+type IconFilterKey = (typeof ICON_FILTER_OPTIONS)[number]['key'];
+type DateFilterKey = (typeof DATE_FILTER_OPTIONS)[number]['key'];
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function isWithinDays(iso: string, days: number): boolean {
+  const date = new Date(iso);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  return diff <= days * 24 * 60 * 60 * 1000;
+}
+
+function isToday(iso: string): boolean {
+  const date = new Date(iso);
+  const now = new Date();
+  return (
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  );
+}
+
+function FilterChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`px-3 py-1.5 rounded-full border mr-2 ${
+        active
+          ? 'bg-violet-600 border-violet-600'
+          : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10'
+      }`}
+    >
+      <Text
+        className={`text-xs font-semibold ${
+          active ? 'text-white' : 'text-neutral-600 dark:text-neutral-400'
+        }`}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
 }
 
 export default function AdminCommunicationsScreen() {
@@ -67,6 +136,8 @@ export default function AdminCommunicationsScreen() {
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [iconFilter, setIconFilter] = useState<IconFilterKey>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilterKey>('all');
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const formRef = useRef<BottomSheet>(null);
 
@@ -88,11 +159,24 @@ export default function AdminCommunicationsScreen() {
     }, [load]),
   );
 
-  const filtered = communications.filter(
-    (c) =>
-      c.titulo.toLowerCase().includes(search.toLowerCase()) ||
-      c.contenido.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = useMemo(() => {
+    return communications.filter((c) => {
+      // Text search
+      if (search) {
+        const q = search.toLowerCase();
+        if (!c.titulo.toLowerCase().includes(q) && !c.contenido.toLowerCase().includes(q)) {
+          return false;
+        }
+      }
+      // Icon/type filter
+      if (iconFilter !== 'all' && c.icono !== iconFilter) return false;
+      // Date filter
+      if (dateFilter === 'today' && !isToday(c.fecha)) return false;
+      if (dateFilter === '7d' && !isWithinDays(c.fecha, 7)) return false;
+      if (dateFilter === '30d' && !isWithinDays(c.fecha, 30)) return false;
+      return true;
+    });
+  }, [communications, search, iconFilter, dateFilter]);
 
   const openCreate = useCallback(() => {
     setSelectedComm(null);
@@ -195,8 +279,12 @@ export default function AdminCommunicationsScreen() {
         <View className="px-5 pt-4 pb-3">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-3">
-              <Pressable onPress={() => router.back()} hitSlop={12}>
-                <ArrowLeft color={iconPrimary} size={22} />
+              <Pressable
+                onPress={() => router.back()}
+                hitSlop={16}
+                className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 items-center justify-center"
+              >
+                <ArrowLeft color={iconPrimary} size={20} />
               </Pressable>
               <Text className="text-neutral-950 dark:text-white text-xl font-bold">
                 Comunicados
@@ -221,7 +309,35 @@ export default function AdminCommunicationsScreen() {
               onChangeText={setSearch}
               placeholder="Buscar comunicados..."
               placeholderTextColor={placeholderText}
+              clearButtonMode="while-editing"
             />
+          </View>
+
+          {/* Filters */}
+          <View className="mt-3 gap-2">
+            {/* Icon/type filter */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {ICON_FILTER_OPTIONS.map((opt) => (
+                <FilterChip
+                  key={opt.key}
+                  label={opt.label}
+                  active={iconFilter === opt.key}
+                  onPress={() => setIconFilter(iconFilter === opt.key && opt.key !== 'all' ? 'all' : opt.key)}
+                />
+              ))}
+            </ScrollView>
+
+            {/* Date filter */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {DATE_FILTER_OPTIONS.map((opt) => (
+                <FilterChip
+                  key={opt.key}
+                  label={opt.label}
+                  active={dateFilter === opt.key}
+                  onPress={() => setDateFilter(dateFilter === opt.key && opt.key !== 'all' ? 'all' : opt.key)}
+                />
+              ))}
+            </ScrollView>
           </View>
         </View>
 
@@ -237,11 +353,14 @@ export default function AdminCommunicationsScreen() {
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
+            {...{ delaysContentTouches: false }}
             ListEmptyComponent={
               <View className="items-center py-16">
                 <Megaphone color={iconMuted} size={40} />
                 <Text className="text-neutral-500 dark:text-neutral-400 text-base mt-3">
-                  {search ? 'Sin resultados' : 'Sin comunicados'}
+                  {search || iconFilter !== 'all' || dateFilter !== 'all'
+                    ? 'Sin resultados con estos filtros'
+                    : 'Sin comunicados'}
                 </Text>
               </View>
             }

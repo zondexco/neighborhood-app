@@ -5,7 +5,6 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
-  Switch,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -14,25 +13,27 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { X } from 'lucide-react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { createAdminApartment, updateAdminApartment, deleteAdminApartment } from '../api';
-import type { AdminApartment, CreateApartmentPayload, UpdateApartmentPayload } from '../types';
+import { createCondominio, updateCondominio, deleteCondominio } from '../api';
+import type { DevCondominio, CreateCondominioPayload, UpdateCondominioPayload } from '../types';
 
 interface Props {
-  apartment: AdminApartment | null; // null = create mode
+  condominio: DevCondominio | null; // null = create mode
   onSaved: () => void;
 }
 
-const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved }, ref) => {
-  const snapPoints = useMemo(() => ['70%'], []);
-  const isEditing = apartment !== null;
+const CondominioFormSheet = forwardRef<BottomSheet, Props>(({ condominio, onSaved }, ref) => {
+  const snapPoints = useMemo(() => ['85%'], []);
+  const isEditing = condominio !== null;
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } =
     useThemeColors();
 
-  const [numero, setNumero] = useState('');
-  const [torre, setTorre] = useState('');
-  const [bloque, setBloque] = useState('');
-  const [piso, setPiso] = useState('');
-  const [activo, setActivo] = useState(true);
+  const [nombre, setNombre] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [ciudad, setCiudad] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
+  const [nit, setNit] = useState('');
+  const [representante, setRepresentante] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,68 +44,81 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
   }, []);
 
   useEffect(() => {
-    if (apartment) {
-      setNumero(apartment.numero);
-      setTorre(apartment.torre ?? '');
-      setBloque(apartment.bloque ?? '');
-      setPiso(apartment.piso?.toString() ?? '');
-      setActivo(apartment.estado === 'activo');
+    if (condominio) {
+      setNombre(condominio.nombre);
+      setDireccion(condominio.direccion);
+      setCiudad(condominio.ciudad);
+      setTelefono(condominio.telefono ?? '');
+      setEmail(condominio.email ?? '');
+      setNit(condominio.nit ?? '');
+      setRepresentante(condominio.representante_legal ?? '');
     } else {
-      setNumero('');
-      setTorre('');
-      setBloque('');
-      setPiso('');
-      setActivo(true);
+      setNombre('');
+      setDireccion('');
+      setCiudad('');
+      setTelefono('');
+      setEmail('');
+      setNit('');
+      setRepresentante('');
     }
     setError(null);
-  }, [apartment]);
+  }, [condominio]);
 
   const close = () => (ref as React.RefObject<BottomSheet>)?.current?.close();
 
   const handleSubmit = useCallback(async () => {
-    if (!numero.trim()) {
-      setError('El número de apartamento es requerido');
+    if (!nombre.trim()) {
+      setError('El nombre es requerido');
+      return;
+    }
+    if (!direccion.trim()) {
+      setError('La dirección es requerida');
+      return;
+    }
+    if (!ciudad.trim()) {
+      setError('La ciudad es requerida');
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
-      const estado = activo ? 'activo' : 'inactivo';
-      const pisoNum = piso ? parseInt(piso, 10) : undefined;
-
-      if (isEditing && apartment) {
-        const payload: UpdateApartmentPayload = {
-          numero: numero.trim(),
-          torre: torre.trim() || undefined,
-          bloque: bloque.trim() || undefined,
-          piso: pisoNum,
-          estado,
+      if (isEditing && condominio) {
+        const payload: UpdateCondominioPayload = {
+          nombre: nombre.trim(),
+          direccion: direccion.trim(),
+          ciudad: ciudad.trim(),
+          telefono: telefono.trim() || undefined,
+          email: email.trim() || undefined,
+          nit: nit.trim() || undefined,
+          representante_legal: representante.trim() || undefined,
         };
-        await updateAdminApartment(apartment.id, payload);
+        await updateCondominio(condominio.id, payload);
       } else {
-        const payload: CreateApartmentPayload = {
-          numero: numero.trim(),
-          torre: torre.trim() || undefined,
-          bloque: bloque.trim() || undefined,
-          piso: pisoNum,
-          estado,
+        const payload: CreateCondominioPayload = {
+          nombre: nombre.trim(),
+          direccion: direccion.trim(),
+          ciudad: ciudad.trim(),
+          telefono: telefono.trim() || undefined,
+          email: email.trim() || undefined,
+          nit: nit.trim() || undefined,
+          representante_legal: representante.trim() || undefined,
         };
-        await createAdminApartment(payload);
+        await createCondominio(payload);
       }
       close();
       onSaved();
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'No se pudo guardar el apartamento');
+      setError(e?.response?.data?.message ?? 'No se pudo guardar el condominio');
     } finally {
       setSubmitting(false);
     }
-  }, [numero, torre, bloque, piso, activo, isEditing, apartment, onSaved, ref]);
+  }, [nombre, direccion, ciudad, telefono, email, nit, representante, isEditing, condominio, onSaved, ref]);
 
   const handleDelete = useCallback(() => {
-    if (!apartment) return;
+    if (!condominio) return;
     Alert.alert(
-      'Eliminar apartamento',
-      `¿Eliminar el apartamento ${apartment.numero}? Esta acción no se puede deshacer.`,
+      'Eliminar condominio',
+      `¿Eliminar "${condominio.nombre}"? Esta acción eliminará todos los datos asociados.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -113,7 +127,7 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
           onPress: async () => {
             setDeleting(true);
             try {
-              await deleteAdminApartment(apartment.id);
+              await deleteCondominio(condominio.id);
               close();
               onSaved();
             } catch (e: any) {
@@ -125,7 +139,7 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
         },
       ],
     );
-  }, [apartment, onSaved, ref]);
+  }, [condominio, onSaved, ref]);
 
   const renderBackdrop = useCallback(
     (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
@@ -166,7 +180,7 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6 mt-2">
           <Text className="text-neutral-950 dark:text-white text-lg font-bold">
-            {isEditing ? 'Editar apartamento' : 'Nuevo apartamento'}
+            {isEditing ? 'Editar condominio' : 'Nuevo condominio'}
           </Text>
           <Pressable
             onPress={close}
@@ -177,63 +191,90 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
         </View>
 
         <View className="gap-4">
-          {/* Número */}
+          {/* Nombre */}
           <View>
-            <Text className={labelClass}>Número *</Text>
+            <Text className={labelClass}>Nombre *</Text>
             <BottomSheetTextInput
-              value={numero}
-              onChangeText={setNumero}
-              placeholder="Ej: 301"
+              value={nombre}
+              onChangeText={setNombre}
+              placeholder="Ej: Conjunto Residencial Los Pinos"
               placeholderTextColor={placeholderText}
               style={inputStyle}
             />
           </View>
 
-          {/* Torre */}
+          {/* Dirección */}
           <View>
-            <Text className={labelClass}>Torre</Text>
+            <Text className={labelClass}>Dirección *</Text>
             <BottomSheetTextInput
-              value={torre}
-              onChangeText={setTorre}
-              placeholder="Ej: A (opcional)"
+              value={direccion}
+              onChangeText={setDireccion}
+              placeholder="Ej: Calle 123 #45-67"
               placeholderTextColor={placeholderText}
               style={inputStyle}
             />
           </View>
 
-          {/* Bloque */}
+          {/* Ciudad */}
           <View>
-            <Text className={labelClass}>Bloque</Text>
+            <Text className={labelClass}>Ciudad *</Text>
             <BottomSheetTextInput
-              value={bloque}
-              onChangeText={setBloque}
-              placeholder="Ej: Norte (opcional)"
+              value={ciudad}
+              onChangeText={setCiudad}
+              placeholder="Ej: Bogotá"
               placeholderTextColor={placeholderText}
               style={inputStyle}
             />
           </View>
 
-          {/* Piso */}
+          {/* Teléfono */}
           <View>
-            <Text className={labelClass}>Piso</Text>
+            <Text className={labelClass}>Teléfono</Text>
             <BottomSheetTextInput
-              value={piso}
-              onChangeText={setPiso}
-              placeholder="Ej: 3 (opcional)"
+              value={telefono}
+              onChangeText={setTelefono}
+              placeholder="(opcional)"
               placeholderTextColor={placeholderText}
-              keyboardType="number-pad"
+              keyboardType="phone-pad"
               style={inputStyle}
             />
           </View>
 
-          {/* Activo toggle */}
-          <View className="flex-row items-center justify-between bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3">
-            <Text className="text-neutral-950 dark:text-white font-medium">Activo</Text>
-            <Switch
-              value={activo}
-              onValueChange={setActivo}
-              trackColor={{ false: isDark ? '#333' : '#d4d4d4', true: '#10b981' }}
-              thumbColor="white"
+          {/* Email */}
+          <View>
+            <Text className={labelClass}>Email</Text>
+            <BottomSheetTextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="(opcional)"
+              placeholderTextColor={placeholderText}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={inputStyle}
+            />
+          </View>
+
+          {/* NIT */}
+          <View>
+            <Text className={labelClass}>NIT</Text>
+            <BottomSheetTextInput
+              value={nit}
+              onChangeText={setNit}
+              placeholder="(opcional)"
+              placeholderTextColor={placeholderText}
+              style={inputStyle}
+            />
+          </View>
+
+          {/* Representante Legal */}
+          <View>
+            <Text className={labelClass}>Representante legal</Text>
+            <BottomSheetTextInput
+              value={representante}
+              onChangeText={setRepresentante}
+              placeholder="(opcional)"
+              placeholderTextColor={placeholderText}
+              style={inputStyle}
             />
           </View>
 
@@ -245,13 +286,13 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
           <Pressable
             onPress={handleSubmit}
             disabled={submitting || deleting}
-            className={`rounded-2xl py-4 items-center mt-2 ${submitting ? 'bg-emerald-600/50' : 'bg-emerald-600'}`}
+            className={`rounded-2xl py-4 items-center mt-2 ${submitting ? 'bg-cyan-600/50' : 'bg-cyan-600'}`}
           >
             {submitting ? (
               <ActivityIndicator color={activityColor} />
             ) : (
               <Text className="text-white font-bold text-base">
-                {isEditing ? 'Guardar cambios' : 'Crear apartamento'}
+                {isEditing ? 'Guardar cambios' : 'Crear condominio'}
               </Text>
             )}
           </Pressable>
@@ -267,7 +308,7 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
                 <ActivityIndicator color="#f87171" />
               ) : (
                 <Text className="text-red-600 dark:text-red-400 font-semibold">
-                  Eliminar apartamento
+                  Eliminar condominio
                 </Text>
               )}
             </Pressable>
@@ -278,5 +319,5 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
   );
 });
 
-ApartmentFormSheet.displayName = 'ApartmentFormSheet';
-export default ApartmentFormSheet;
+CondominioFormSheet.displayName = 'CondominioFormSheet';
+export default CondominioFormSheet;

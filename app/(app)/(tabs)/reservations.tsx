@@ -131,6 +131,7 @@ export default function ReservationsScreen() {
     <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
+        pointerEvents="none"
         className="absolute top-0 left-0 bg-blue-600/15 rounded-full"
         style={{
           width: Math.min(width * 0.7, 400),
@@ -140,7 +141,7 @@ export default function ReservationsScreen() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="py-6">
             {/* Header */}
             <View className="flex-row items-center justify-between mb-6">

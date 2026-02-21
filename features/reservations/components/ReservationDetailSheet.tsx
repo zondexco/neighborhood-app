@@ -24,7 +24,12 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
   ({ reservation, role, isAdmin, onUpdated }, ref) => {
     const snapPoints = useMemo(() => ['55%'], []);
     const [loading, setLoading] = useState(false);
+    const [sheetOpen, setSheetOpen] = useState(false);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
+
+    const handleSheetChange = useCallback((index: number) => {
+      setSheetOpen(index >= 0);
+    }, []);
 
     const isResidente = !isAdmin && role !== 'empleado';
     const canCancel =
@@ -105,6 +110,8 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        onChange={handleSheetChange}
+        containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       >
         <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
           {/* Header */}

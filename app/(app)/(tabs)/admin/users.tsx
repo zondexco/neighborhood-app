@@ -10,15 +10,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { ArrowLeft, Plus, Search, Users } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search, Users, Building2 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import type { AuthState } from '@/features/auth/hooks/useAuth';
 import { fetchAdminUsers } from '@/features/admin/api';
 import type { AdminUser } from '@/features/admin/types';
 import UserFormSheet from '@/features/admin/components/UserFormSheet';
 
 const ROL_COLORS: Record<string, { bg: string; text: string; darkText: string }> = {
+  dev:           { bg: 'bg-amber-500/20',  text: 'text-amber-600',  darkText: 'dark:text-amber-400'  },
   administrador: { bg: 'bg-violet-500/20', text: 'text-violet-600', darkText: 'dark:text-violet-400' },
   admin:         { bg: 'bg-violet-500/20', text: 'text-violet-600', darkText: 'dark:text-violet-400' },
   empleado:      { bg: 'bg-blue-500/20',   text: 'text-blue-600',   darkText: 'dark:text-blue-400'   },
@@ -26,6 +29,7 @@ const ROL_COLORS: Record<string, { bg: string; text: string; darkText: string }>
 };
 
 const ROL_LABELS: Record<string, string> = {
+  dev: 'Dev',
   administrador: 'Admin',
   admin: 'Admin',
   empleado: 'Empleado',
@@ -47,6 +51,8 @@ function avatarColor(rol: string): string {
 
 export default function UsersScreen() {
   const { isDark, iconPrimary, iconMuted, activityColor, placeholderText } = useThemeColors();
+  const callerRole = useAuth((s: AuthState) => s.role);
+  const callerUserId = useAuth((s: AuthState) => s.userId);
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +126,7 @@ export default function UsersScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="pb-6">
             {/* Title */}
             <View className="flex-row items-center gap-3 mb-5">
@@ -207,6 +213,14 @@ export default function UsersScreen() {
                             >
                               {user.email}
                             </Text>
+                            {user.apartamento && (
+                              <View className="flex-row items-center gap-1 mt-0.5">
+                                <Building2 color={iconMuted} size={12} />
+                                <Text className="text-neutral-400 dark:text-neutral-500 text-xs" numberOfLines={1}>
+                                  {user.apartamento}
+                                </Text>
+                              </View>
+                            )}
                           </View>
 
                           {/* Badges */}
@@ -231,7 +245,7 @@ export default function UsersScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      <UserFormSheet ref={formSheetRef} user={editingUser} onSaved={fetchData} />
+      <UserFormSheet ref={formSheetRef} user={editingUser} callerRole={callerRole} callerUserId={callerUserId} onSaved={fetchData} />
     </View>
   );
 }

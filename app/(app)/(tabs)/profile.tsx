@@ -195,6 +195,7 @@ export default function ProfileScreen() {
     <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
+        pointerEvents="none"
         className="absolute top-0 left-0 bg-purple-600/15 rounded-full"
         style={{
           width: 400,
@@ -204,7 +205,7 @@ export default function ProfileScreen() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="py-6">
 
             {/* Avatar + Name Header */}

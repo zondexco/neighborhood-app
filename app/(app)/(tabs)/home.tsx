@@ -19,8 +19,10 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { AuthState } from '@/features/auth/hooks/useAuth';
 import { api } from '@/lib/api';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { fetchUnreadCount } from '@/features/communications/api';
+import { fetchUnreadCount, fetchCommunication } from '@/features/communications/api';
 import CondominioInfoSheet from '@/features/communications/components/CondominioInfoSheet';
+import CommunicationDetailSheet from '@/features/communications/components/CommunicationDetailSheet';
+import type { Communication } from '@/features/communications/types';
 
 // ── Types ────────────────────────────────────────────────────
 interface PendingPackage {
@@ -80,7 +82,9 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const infoSheetRef = useRef<BottomSheet>(null);
+  const detailSheetRef = useRef<BottomSheet>(null);
 
   const fetchSummary = useCallback(async () => {
     setLoading(true);
@@ -105,6 +109,21 @@ export default function HomeScreen() {
     }, [fetchSummary])
   );
 
+  const openCommunication = useCallback(async (id: string) => {
+    try {
+      const comm = await fetchCommunication(id);
+      setSelectedComm(comm);
+      detailSheetRef.current?.snapToIndex(0);
+    } catch {
+      // fallback: navigate to notifications
+      router.push('/notifications' as any);
+    }
+  }, []);
+
+  const handleCommRead = useCallback(() => {
+    fetchUnreadCount().then(setUnreadCount).catch(() => {});
+  }, []);
+
   // ── Greeting ──────────────────────────────────────────────
   const hour = new Date().getHours();
   const greeting =
@@ -114,6 +133,7 @@ export default function HomeScreen() {
     <View className="flex-1 bg-white dark:bg-black">
       {/* Decorative gradient */}
       <View
+        pointerEvents="none"
         className="absolute top-0 right-0 bg-blue-600/20 rounded-full"
         style={{
           width: Math.min(width * 0.8, 520),
@@ -123,7 +143,7 @@ export default function HomeScreen() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
           <ResponsiveContainer className="py-6">
 
             {/* Header */}
@@ -273,21 +293,26 @@ export default function HomeScreen() {
                   ) : (
                     <View className="gap-3">
                       {summary.recent_news.map((news) => (
-                        <LiquidView
+                        <Pressable
                           key={news.id}
-                          intensity={15}
-                          tint="dark"
-                          className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          onPress={() => openCommunication(news.id)}
+                          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                         >
-                          <View className="w-2 h-2 rounded-full bg-purple-500 mt-1" />
-                          <View className="flex-1">
-                            <Text className="text-neutral-950 dark:text-white font-medium">{news.titulo}</Text>
-                            <Text className="text-neutral-500 text-xs mt-0.5">
-                              {formatDate(news.fecha)}
-                            </Text>
-                          </View>
-                          <ChevronRight color={iconSubtle} size={16} />
-                        </LiquidView>
+                          <LiquidView
+                            intensity={15}
+                            tint="dark"
+                            className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          >
+                            <View className="w-2 h-2 rounded-full bg-purple-500 mt-1" />
+                            <View className="flex-1">
+                              <Text className="text-neutral-950 dark:text-white font-medium">{news.titulo}</Text>
+                              <Text className="text-neutral-500 text-xs mt-0.5">
+                                {formatDate(news.fecha)}
+                              </Text>
+                            </View>
+                            <ChevronRight color={iconSubtle} size={16} />
+                          </LiquidView>
+                        </Pressable>
                       ))}
                     </View>
                   )}
@@ -300,6 +325,11 @@ export default function HomeScreen() {
       </SafeAreaView>
 
       <CondominioInfoSheet ref={infoSheetRef} />
+      <CommunicationDetailSheet
+        ref={detailSheetRef}
+        communication={selectedComm}
+        onRead={handleCommRead}
+      />
     </View>
   );
 }
