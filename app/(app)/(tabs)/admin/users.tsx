@@ -78,6 +78,9 @@ export default function UsersScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchData();
+      return () => {
+        formSheetRef.current?.close();
+      };
     }, [fetchData]),
   );
 
@@ -126,7 +129,12 @@ export default function UsersScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          {...{ delaysContentTouches: false }}
+        >
           <ResponsiveContainer className="pb-6">
             {/* Title */}
             <View className="flex-row items-center gap-3 mb-5">

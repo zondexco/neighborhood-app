@@ -93,6 +93,9 @@ export default function AdminReservationsScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchData();
+      return () => {
+        detailSheetRef.current?.close();
+      };
     }, [fetchData]),
   );
 
@@ -329,6 +332,8 @@ export default function AdminReservationsScreen() {
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 120, gap: 12 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             {...{ delaysContentTouches: false }}
             ListEmptyComponent={
               <View className="items-center py-16 px-5">
@@ -354,11 +359,13 @@ export default function AdminReservationsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        style={sheetOpen ? undefined : { zIndex: -1 }}
         onChange={(i) => setSheetOpen(i >= 0)}
         containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       >
         <BottomSheetScrollView
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {detail && detailStatus && (

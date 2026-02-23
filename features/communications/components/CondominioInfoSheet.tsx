@@ -69,6 +69,7 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      style={sheetOpen ? undefined : { zIndex: -1 }}
       onChange={handleSheetChange}
       containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
     >

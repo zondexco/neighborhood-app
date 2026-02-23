@@ -5,11 +5,11 @@ import {
   Pressable,
   ActivityIndicator,
   Platform,
-  TextInput,
 } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Calendar, Clock, Users, MapPin, ChevronLeft, X, Timer } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidView } from '@/components/native/LiquidView';
 import { fetchSpaces, createReservation } from '../api';
 import type { Space, CreateReservationPayload } from '../types';
@@ -34,6 +34,7 @@ const DURATION_OPTIONS = [
 
 const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, ref) => {
   const snapPoints = useMemo(() => ['92%'], []);
+  const { bottom: safeBottom } = useSafeAreaInsets();
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
   // Form state
@@ -189,11 +190,15 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      style={sheetOpen ? undefined : { zIndex: -1 }}
       onChange={handleSheetChange}
       containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+      android_keyboardInputMode="adjustResize"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
       <BottomSheetScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 28 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -414,7 +419,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <Users color="#60a5fa" size={18} />
               <Text className="text-neutral-950 dark:text-white font-semibold">Personas esperadas</Text>
             </View>
-            <TextInput
+            <BottomSheetTextInput
               value={people}
               onChangeText={setPeople}
               placeholder="Ej: 10"

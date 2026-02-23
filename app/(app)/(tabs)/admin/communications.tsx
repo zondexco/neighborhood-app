@@ -156,6 +156,9 @@ export default function AdminCommunicationsScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => {
+        formRef.current?.close();
+      };
     }, [load]),
   );
 
@@ -316,7 +319,7 @@ export default function AdminCommunicationsScreen() {
           {/* Filters */}
           <View className="mt-3 gap-2">
             {/* Icon/type filter */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {ICON_FILTER_OPTIONS.map((opt) => (
                 <FilterChip
                   key={opt.key}
@@ -328,7 +331,7 @@ export default function AdminCommunicationsScreen() {
             </ScrollView>
 
             {/* Date filter */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {DATE_FILTER_OPTIONS.map((opt) => (
                 <FilterChip
                   key={opt.key}
@@ -353,6 +356,8 @@ export default function AdminCommunicationsScreen() {
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             {...{ delaysContentTouches: false }}
             ListEmptyComponent={
               <View className="items-center py-16">

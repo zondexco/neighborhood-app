@@ -109,6 +109,7 @@ const CommunicationDetailSheet = forwardRef<BottomSheet, Props>(
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        style={sheetOpen ? undefined : { zIndex: -1 }}
         onChange={handleSheetChange}
         containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
         android_keyboardInputMode="adjustResize"

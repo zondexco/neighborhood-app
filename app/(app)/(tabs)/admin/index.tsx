@@ -54,6 +54,9 @@ export default function AdminDashboard() {
   useFocusEffect(
     useCallback(() => {
       fetchData();
+      return () => {
+        editSheetRef.current?.close();
+      };
     }, [fetchData]),
   );
 
@@ -112,7 +115,12 @@ export default function AdminDashboard() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          {...{ delaysContentTouches: false }}
+        >
           <ResponsiveContainer className="py-6">
             {/* Header */}
             <View className="flex-row items-center gap-3 mb-6">

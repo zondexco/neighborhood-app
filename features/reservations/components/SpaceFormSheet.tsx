@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Switch } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { createSpace, updateSpace } from '../api';
 import type { Space } from '../types';
@@ -13,6 +14,7 @@ interface Props {
 
 const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) => {
   const snapPoints = useMemo(() => ['60%'], []);
+  const { bottom: safeBottom } = useSafeAreaInsets();
   const isEditing = space !== null;
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } = useThemeColors();
 
@@ -96,13 +98,17 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+      style={sheetOpen ? undefined : { zIndex: -1 }}
       onChange={handleSheetChange}
       containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       android_keyboardInputMode="adjustResize"
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
-      <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
+      <BottomSheetScrollView
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6">
           <Text className="text-neutral-950 dark:text-white text-lg font-bold">
@@ -204,7 +210,7 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
             )}
           </Pressable>
         </View>
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheet>
   );
 });

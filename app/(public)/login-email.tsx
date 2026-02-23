@@ -9,6 +9,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -23,11 +24,17 @@ const DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@i
 
 export default function LoginEmailScreen() {
   const [email, setEmail] = useState('');
+  const { width, height } = useWindowDimensions();
   const setEmailTemp = useAuth((state) => state.setEmailTemp);
   const inputRef = useRef<TextInput>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark, iconPrimary, iconMuted, bgSecondary, placeholderText } = useThemeColors();
+  const isCompact = width < 380 || height < 720;
+  const contentPaddingHorizontal = isCompact ? 20 : 28;
+  const iconSize = isCompact ? 58 : 68;
+  const inputHeight = isCompact ? 60 : 68;
+  const ctaHeight = isCompact ? 58 : 64;
 
   const emailTrim = email.trim().toLowerCase();
   const isValidEmail = EMAIL_REGEX.test(emailTrim);
@@ -70,7 +77,11 @@ export default function LoginEmailScreen() {
       style={s.scroll}
       contentContainerStyle={[
         s.scrollContent,
-        { paddingTop: Math.max(insets.top, 20), paddingBottom: Math.max(insets.bottom, 20) },
+        {
+          paddingTop: Math.max(insets.top, 20),
+          paddingBottom: Math.max(insets.bottom, 20),
+          paddingHorizontal: contentPaddingHorizontal,
+        },
       ]}
       keyboardShouldPersistTaps="always"
     >
@@ -86,18 +97,32 @@ export default function LoginEmailScreen() {
 
       <View className="flex-1 justify-center max-w-[520px] w-full self-center">
         {/* Icon */}
-        <View className="w-[68px] h-[68px] rounded-[22px] bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 items-center justify-center mb-8">
+        <View
+          className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 items-center justify-center mb-8"
+          style={{ width: iconSize, height: iconSize, borderRadius: isCompact ? 18 : 22 }}
+        >
           <Mail color={iconPrimary} size={30} />
         </View>
 
         {/* Header */}
-        <Text className="text-neutral-950 dark:text-white text-4xl font-extrabold tracking-tighter mb-3">Identifícate</Text>
-        <Text className="text-neutral-500 text-lg leading-7 mb-11">
+        <Text
+          className="text-neutral-950 dark:text-white font-extrabold tracking-tighter mb-3"
+          style={{ fontSize: isCompact ? 32 : 36 }}
+        >
+          Identifícate
+        </Text>
+        <Text
+          className="text-neutral-500 leading-7 mb-11"
+          style={{ fontSize: isCompact ? 16 : 18 }}
+        >
           Ingresa tu correo electrónico para continuar con el inicio de sesión.
         </Text>
 
         {/* Email Input */}
-        <View className={`flex-row items-center px-5 h-[68px] rounded-2xl border ${email.length > 0 ? 'border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50' : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900'}`}>
+        <View
+          className={`flex-row items-center px-5 rounded-2xl border ${email.length > 0 ? 'border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50' : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900'}`}
+          style={{ height: inputHeight }}
+        >
           <Mail color="#525252" size={20} />
           <TextInput
             ref={inputRef}
@@ -140,7 +165,8 @@ export default function LoginEmailScreen() {
         <Pressable
           onPress={handleNext}
           disabled={!isValidEmail}
-          className={`w-full max-w-[520px] h-16 rounded-2xl flex-row items-center justify-center border ${isValidEmail ? 'bg-neutral-950 dark:bg-white border-neutral-950 dark:border-white active:opacity-90' : 'bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'}`}
+          className={`w-full max-w-[520px] rounded-2xl flex-row items-center justify-center border ${isValidEmail ? 'bg-neutral-950 dark:bg-white border-neutral-950 dark:border-white active:opacity-90' : 'bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'}`}
+          style={{ height: ctaHeight }}
         >
           <Text className={`font-extrabold text-lg mr-2.5 ${isValidEmail ? 'text-white dark:text-black' : 'text-neutral-400 dark:text-neutral-600'}`}>
             Continuar
@@ -179,6 +205,5 @@ const s = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 28,
   },
 });

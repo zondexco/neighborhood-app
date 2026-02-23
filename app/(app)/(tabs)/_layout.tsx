@@ -5,6 +5,7 @@ import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidView } from '@/components/native/LiquidView';
+import { HapticTab } from '@/components/haptic-tab';
 import { Breakpoints } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -14,6 +15,7 @@ export default function TabLayout() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const hasSidebar = Platform.OS === 'web' && width >= Breakpoints.laptop;
+  const barHorizontalInset = hasSidebar ? 0 : Math.max(12, Math.min(24, Math.floor(width * 0.04)));
   const isAdmin = useAuth((s: AuthState) => s.isAdmin);
   const isDev = useAuth((s: AuthState) => s.role === 'dev');
   const {
@@ -30,7 +32,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        freezeOnBlur: true,
+        freezeOnBlur: false,
         headerStyle: {
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : headerBg,
         },
@@ -46,14 +48,16 @@ export default function TabLayout() {
             />
           ) : undefined,
         tabBarPosition: hasSidebar ? 'left' : 'bottom',
+        tabBarButton: (props) => <HapticTab {...props} />,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           position: hasSidebar ? 'relative' : 'absolute',
           left: hasSidebar ? undefined : 0,
           right: hasSidebar ? undefined : 0,
-          marginHorizontal: hasSidebar ? 0 : 24,
+          marginHorizontal: barHorizontalInset,
           bottom: hasSidebar ? undefined : Math.max(insets.bottom, 12),
           width: hasSidebar ? 250 : undefined,
-          height: hasSidebar ? '100%' : 64,
+          height: hasSidebar ? '100%' : 58,
           borderWidth: 0,
           borderTopWidth: 0,
           borderRightWidth: hasSidebar ? 1 : 0,
@@ -62,8 +66,8 @@ export default function TabLayout() {
           overflow: 'hidden',
           backgroundColor: hasSidebar ? tabSidebarBg : 'transparent',
           elevation: 0,
-          paddingTop: hasSidebar ? 16 : 0,
-          paddingBottom: hasSidebar ? 0 : 0,
+          paddingTop: hasSidebar ? 16 : 4,
+          paddingBottom: hasSidebar ? 0 : 4,
           paddingHorizontal: hasSidebar ? 0 : 8,
           shadowColor: '#000',
           shadowOpacity: isDark ? 0.4 : 0.08,
@@ -74,12 +78,14 @@ export default function TabLayout() {
           !hasSidebar ? (
             Platform.OS === 'ios' ? (
               <BlurView
+                pointerEvents="none"
                 intensity={85}
                 tint={isDark ? 'systemMaterialDark' : 'systemMaterialLight'}
                 style={StyleSheet.absoluteFillObject}
               />
             ) : (
               <View
+                pointerEvents="none"
                 style={[
                   StyleSheet.absoluteFillObject,
                   {
@@ -95,7 +101,9 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: hasSidebar ? 14 : 10,
           fontWeight: '700',
-          marginBottom: hasSidebar ? 0 : 0,
+          marginTop: hasSidebar ? 2 : 1,
+          marginBottom: 0,
+          lineHeight: hasSidebar ? 18 : 12,
         },
         tabBarItemStyle: hasSidebar
           ? {
@@ -107,9 +115,14 @@ export default function TabLayout() {
           : {
               borderRadius: 16,
               marginHorizontal: 2,
+              marginVertical: 0,
+              paddingVertical: 0,
+              minHeight: 48,
+              justifyContent: 'center',
             },
         tabBarIconStyle: {
-          marginTop: hasSidebar ? 0 : 2,
+          marginTop: 0,
+          marginBottom: 0,
         },
         tabBarActiveBackgroundColor: hasSidebar
           ? isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'

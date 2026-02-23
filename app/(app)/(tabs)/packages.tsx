@@ -70,7 +70,6 @@ export default function PackagesScreen() {
 
   const role = useAuth((s: AuthState) => s.role);
   const isAdmin = useAuth((s: AuthState) => s.isAdmin);
-  const apartmentId = useAuth((s: AuthState) => s.apartmentId);
 
   const isResidente = role === 'residente';
   const isEmpleadoOrAdmin = isAdmin || role === 'empleado';
@@ -135,6 +134,10 @@ export default function PackagesScreen() {
   useFocusEffect(
     useCallback(() => {
       load(filters);
+      return () => {
+        detailSheetRef.current?.close();
+        formSheetRef.current?.close();
+      };
     }, [load, filters]),
   );
 
@@ -183,7 +186,12 @@ export default function PackagesScreen() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled" {...{ delaysContentTouches: false }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          {...{ delaysContentTouches: false }}
+        >
           <ResponsiveContainer className="py-6">
 
             {/* Header */}

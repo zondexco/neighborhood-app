@@ -65,6 +65,9 @@ export default function ApartmentsScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchData();
+      return () => {
+        formSheetRef.current?.close();
+      };
     }, [fetchData]),
   );
 

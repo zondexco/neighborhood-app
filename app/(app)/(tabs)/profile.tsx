@@ -205,7 +205,12 @@ export default function ProfileScreen() {
       />
 
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          {...{ delaysContentTouches: false }}
+        >
           <ResponsiveContainer className="py-6">
 
             {/* Avatar + Name Header */}

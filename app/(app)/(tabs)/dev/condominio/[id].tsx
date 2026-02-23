@@ -71,6 +71,10 @@ export default function CondominioDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => {
+        formRef.current?.close();
+        adminFormRef.current?.close();
+      };
     }, [load]),
   );
 
@@ -150,7 +154,12 @@ export default function CondominioDetailScreen() {
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <SafeAreaView className="flex-1">
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} {...{ delaysContentTouches: false }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          {...{ delaysContentTouches: false }}
+        >
           <ResponsiveContainer className="py-4">
             {/* Header */}
             <View className="flex-row items-center gap-3 mb-6">

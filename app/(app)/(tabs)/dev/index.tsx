@@ -52,6 +52,9 @@ export default function DevDashboard() {
   useFocusEffect(
     useCallback(() => {
       load();
+      return () => {
+        formRef.current?.close();
+      };
     }, [load]),
   );
 
@@ -218,6 +221,8 @@ export default function DevDashboard() {
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             {...{ delaysContentTouches: false }}
             ListEmptyComponent={
               <View className="items-center py-16">

@@ -104,7 +104,14 @@ export default function NotificationsScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      return () => {
+        detailRef.current?.close();
+      };
+    }, [load]),
+  );
 
   const handlePressNotif = useCallback(async (notif: AppNotification) => {
     if (!notif.leido) {

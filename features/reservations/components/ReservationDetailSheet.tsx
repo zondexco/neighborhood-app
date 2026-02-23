@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Calendar, Clock, Users, MapPin, X } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { updateReservation, deleteReservation } from '../api';
@@ -23,6 +24,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
 const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
   ({ reservation, role, isAdmin, onUpdated }, ref) => {
     const snapPoints = useMemo(() => ['55%'], []);
+    const { bottom: safeBottom } = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
@@ -110,10 +112,14 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
+        style={sheetOpen ? undefined : { zIndex: -1 }}
         onChange={handleSheetChange}
         containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       >
-        <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
+        <BottomSheetScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 20 }}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Header */}
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
@@ -225,7 +231,7 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
               )}
             </View>
           )}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheet>
     );
   },

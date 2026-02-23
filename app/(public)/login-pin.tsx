@@ -7,6 +7,7 @@ import {
   Pressable,
   Platform,
   KeyboardAvoidingView,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -47,11 +48,16 @@ export default function LoginPinScreen() {
   const [pin, setPin]                           = useState('');
   const [loading, setLoading]                   = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const { width, height } = useWindowDimensions();
 
   const email  = useAuth((s: AuthState) => s.emailTemp);
   const login  = useAuth((s: AuthState) => s.login);
   const insets = useSafeAreaInsets();
   const { isDark, bgSecondary, iconPrimary, iconMuted, activityColor } = useThemeColors();
+  const isCompact = width < 380 || height < 720;
+  const iconBox = isCompact ? 58 : 68;
+  const titleSize = isCompact ? 30 : 36;
+  const subtitleSize = isCompact ? 15 : 17;
 
   // ── Auto-trigger biometric on mount if this email has it enabled ──────────
   useEffect(() => {
@@ -113,7 +119,7 @@ export default function LoginPinScreen() {
     })();
 
     return () => { cancelled = true; };
-  }, [email]);
+  }, [email, login]);
 
   // ── PIN handlers ──────────────────────────────────────────────────────────
   const handleKeyPress = (digit: string) => {
@@ -193,9 +199,9 @@ export default function LoginPinScreen() {
         {/* Lock icon */}
         <View
           style={{
-            width: 68,
-            height: 68,
-            borderRadius: 22,
+            width: iconBox,
+            height: iconBox,
+            borderRadius: isCompact ? 18 : 22,
             backgroundColor: isDark ? '#18181b' : '#f5f5f5',
             borderWidth: 1,
             borderColor: isDark ? '#27272a' : '#e5e5e5',
@@ -210,7 +216,7 @@ export default function LoginPinScreen() {
         <Text
           style={{
             color: isDark ? '#ffffff' : '#0a0a0a',
-            fontSize: 36,
+            fontSize: titleSize,
             fontWeight: '800',
             letterSpacing: -0.5,
             marginBottom: 10,
@@ -220,7 +226,12 @@ export default function LoginPinScreen() {
         </Text>
 
         <Text
-          style={{ color: iconMuted, fontSize: 17, lineHeight: 26, marginBottom: 44 }}
+          style={{
+            color: iconMuted,
+            fontSize: subtitleSize,
+            lineHeight: isCompact ? 22 : 26,
+            marginBottom: isCompact ? 32 : 44,
+          }}
           numberOfLines={1}
         >
           {email}
@@ -234,8 +245,8 @@ export default function LoginPinScreen() {
               <View
                 key={i}
                 style={{
-                  width: filled ? 15 : 13,
-                  height: filled ? 15 : 13,
+                  width: filled ? (isCompact ? 13 : 15) : (isCompact ? 11 : 13),
+                  height: filled ? (isCompact ? 13 : 15) : (isCompact ? 11 : 13),
                   borderRadius: 8,
                   backgroundColor: filled ? iconPrimary : 'transparent',
                   borderWidth: filled ? 0 : 1.5,
