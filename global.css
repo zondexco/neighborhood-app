@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		color-scheme: light dark;
+	}
+
+	:root.dark {
+		color-scheme: dark;
+		background: #0a0a0a;
+	}
+
+	html,
+	body,
+	#root {
+		height: 100%;
+	}
+}
+
+@layer utilities {
+	.text-xs   { font-size: var(--text-xs,   12px); }
+	.text-sm   { font-size: var(--text-sm,   14px); }
+	.text-base { font-size: var(--text-base, 16px); }
+	.text-lg   { font-size: var(--text-lg,   18px); }
+	.text-xl   { font-size: var(--text-xl,   20px); }
+	.text-2xl  { font-size: var(--text-2xl,  24px); }
+	.text-3xl  { font-size: var(--text-3xl,  30px); }
+	.text-4xl  { font-size: var(--text-4xl,  36px); }
+}
