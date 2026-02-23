@@ -75,24 +75,27 @@ export default function TabLayout() {
         },
         tabBarBackground: () =>
           !hasSidebar ? (
-            <View
-              pointerEvents="none"
-              style={[
-                StyleSheet.absoluteFillObject,
-                {
-                  borderRadius: 32,
-                  overflow: 'hidden',
-                  borderWidth: 1,
-                  borderColor: isDark
-                    ? 'rgba(255,255,255,0.12)'
-                    : 'rgba(0,0,0,0.07)',
-                },
-              ]}
-            >
+            // Wrapper sin overflow:hidden para que GlassView (UIVisualEffectView)
+            // pueda renderizar correctamente en iOS sin doble clipping.
+            <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
               <LiquidView
                 intensity={60}
                 tint={isDark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
-                style={{ flex: 1 }}
+                style={[StyleSheet.absoluteFillObject, { borderRadius: 32 }]}
+              />
+              {/* Borde como capa overlay separada */}
+              <View
+                pointerEvents="none"
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    borderRadius: 32,
+                    borderWidth: 1,
+                    borderColor: isDark
+                      ? 'rgba(255,255,255,0.12)'
+                      : 'rgba(0,0,0,0.07)',
+                  },
+                ]}
               />
             </View>
           ) : undefined,
@@ -125,7 +128,7 @@ export default function TabLayout() {
         },
         tabBarActiveBackgroundColor: hasSidebar
           ? isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
-          : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+          : 'transparent',
         tabBarActiveTintColor: tabActiveTint,
         tabBarInactiveTintColor: tabInactiveTint,
         sceneStyle: {
