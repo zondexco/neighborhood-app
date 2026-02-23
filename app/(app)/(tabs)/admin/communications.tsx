@@ -204,7 +204,7 @@ export default function AdminCommunicationsScreen() {
           <LiquidView
             intensity={15}
             tint={isDark ? 'dark' : 'light'}
-            className="p-4 rounded-2xl border border-black/5 dark:border-white/5"
+            className="p-4 rounded-2xl border border-black/5 dark:border-white/10"
           >
             <View className="flex-row items-start gap-3">
               <View className="w-10 h-10 rounded-xl bg-violet-500/10 items-center justify-center">

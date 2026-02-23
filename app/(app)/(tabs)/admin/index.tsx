@@ -157,7 +157,7 @@ export default function AdminDashboard() {
                         key={card.label}
                         intensity={15}
                         tint={isDark ? 'dark' : 'light'}
-                        className="flex-1 p-3 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-1"
+                        className="flex-1 p-3 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-1"
                       >
                         <Icon color={card.color} size={20} />
                         <Text
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                           <LiquidView
                             intensity={15}
                             tint={isDark ? 'dark' : 'light'}
-                            className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-4"
+                            className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-4"
                           >
                             <View className={`w-12 h-12 rounded-xl ${card.bg} items-center justify-center`}>
                               <Icon color={card.color} size={22} />
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
                     <LiquidView
                       intensity={15}
                       tint={isDark ? 'dark' : 'light'}
-                      className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-2"
+                      className="p-4 rounded-2xl border border-black/5 dark:border-white/10 gap-2"
                     >
                       {[
                         { label: 'Nombre', value: condominio.nombre },
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
                   <LiquidView
                     intensity={15}
                     tint={isDark ? 'dark' : 'light'}
-                    className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+                    className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center justify-between"
                   >
                     <View className="flex-row items-center gap-3 flex-1 mr-3">
                       <ShieldCheck color="#06b6d4" size={20} />

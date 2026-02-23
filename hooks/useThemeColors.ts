@@ -10,7 +10,7 @@ export function useThemeColors() {
     bgPrimary:      isDark ? '#000000' : '#ffffff',
     bgSecondary:    isDark ? '#0a0a0a' : '#f5f5f5',
     bgCard:         isDark ? '#141414' : '#f0f0f0',
-    border:         isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    border:         isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
     activityColor:  isDark ? 'white'   : '#18181b',
     headerBg:       isDark ? '#0a0a0a' : '#ffffff',
     headerTint:     isDark ? '#ffffff' : '#000000',

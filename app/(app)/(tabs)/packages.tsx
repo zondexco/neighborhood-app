@@ -225,7 +225,7 @@ export default function PackagesScreen() {
 
             {/* Search bar — empleado + admin */}
             {isEmpleadoOrAdmin && (
-              <View className="mb-4 flex-row items-center gap-2 bg-black/5 dark:bg-white/5 rounded-2xl px-3 border border-black/5 dark:border-white/5">
+              <View className="mb-4 flex-row items-center gap-2 bg-black/5 dark:bg-white/5 rounded-2xl px-3 border border-black/5 dark:border-white/10">
                 <Search color={iconSubtle} size={18} />
                 <TextInput
                   value={filters.search}
@@ -318,7 +318,7 @@ export default function PackagesScreen() {
               <LiquidView
                 intensity={15}
                 tint="dark"
-                className="p-8 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-3"
+                className="p-8 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-3"
               >
                 <Package color="#d97706" size={36} />
                 <Text className="text-neutral-600 dark:text-neutral-400 text-base text-center">
@@ -344,7 +344,7 @@ export default function PackagesScreen() {
                       <LiquidView
                         intensity={15}
                         tint="dark"
-                        className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                        className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                       >
                         {/* Icon */}
                         <View className={`w-11 h-11 rounded-full items-center justify-center ${isPending ? 'bg-amber-500/20' : 'bg-green-500/20'}`}>

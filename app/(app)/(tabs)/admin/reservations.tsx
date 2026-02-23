@@ -201,7 +201,7 @@ export default function AdminReservationsScreen() {
           <LiquidView
             intensity={15}
             tint={isDark ? 'dark' : 'light'}
-            className={`p-4 rounded-2xl border border-black/5 dark:border-white/5 ${isPast ? 'opacity-60' : ''}`}
+            className={`p-4 rounded-2xl border border-black/5 dark:border-white/10 ${isPast ? 'opacity-60' : ''}`}
           >
             <View className="flex-row items-start justify-between mb-2">
               <View className="flex-1 mr-2">
@@ -390,7 +390,7 @@ export default function AdminReservationsScreen() {
               <LiquidView
                 intensity={15}
                 tint="dark"
-                className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-4"
+                className="p-4 rounded-2xl border border-black/5 dark:border-white/10 gap-4"
               >
                 <View className="flex-row items-center gap-3">
                   <View className="w-9 h-9 rounded-full bg-blue-500/20 items-center justify-center">

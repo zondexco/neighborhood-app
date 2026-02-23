@@ -351,7 +351,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, callerRole, caller
                     {/* Option: sin asignar */}
                     <Pressable
                       onPress={() => { setApartamentoId(null); setShowApartmentPicker(false); }}
-                      className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${!apartamentoId ? 'bg-violet-500/20' : ''}`}
+                      className={`px-4 py-3 border-b border-black/5 dark:border-white/10 ${!apartamentoId ? 'bg-violet-500/20' : ''}`}
                     >
                       <Text className={!apartamentoId ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-neutral-500 dark:text-neutral-400'}>
                         Sin asignar
@@ -366,7 +366,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, callerRole, caller
                           <Pressable
                             key={apt.id}
                             onPress={() => { setApartamentoId(apt.id); setShowApartmentPicker(false); }}
-                            className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${isSelected ? 'bg-violet-500/20' : ''}`}
+                            className={`px-4 py-3 border-b border-black/5 dark:border-white/10 ${isSelected ? 'bg-violet-500/20' : ''}`}
                           >
                             <Text className={isSelected ? 'text-violet-600 dark:text-violet-400 font-semibold' : 'text-neutral-950 dark:text-white'}>
                               {label}

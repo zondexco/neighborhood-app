@@ -146,7 +146,7 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
           <LiquidView
             intensity={15}
             tint="dark"
-            className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-4 mb-4"
+            className="p-4 rounded-2xl border border-black/5 dark:border-white/10 gap-4 mb-4"
           >
             <View className="flex-row items-center gap-3">
               <View className="w-9 h-9 rounded-full bg-amber-500/20 items-center justify-center">

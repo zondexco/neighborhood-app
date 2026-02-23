@@ -176,7 +176,7 @@ export default function ApartmentsScreen() {
                         <LiquidView
                           intensity={15}
                           tint={isDark ? 'dark' : 'light'}
-                          className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                         >
                           {/* Icon */}
                           <View className="w-10 h-10 rounded-xl bg-emerald-500/15 items-center justify-center">

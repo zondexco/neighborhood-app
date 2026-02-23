@@ -158,7 +158,7 @@ export default function NotificationsScreen() {
             intensity={15}
             tint={isDark ? 'dark' : 'light'}
             className={`p-4 rounded-2xl border flex-row items-start gap-3 ${
-              item.leido ? 'border-black/5 dark:border-white/5' : 'border-emerald-500/25'
+              item.leido ? 'border-black/5 dark:border-white/10' : 'border-emerald-500/25'
             }`}
           >
             <View className={`w-10 h-10 rounded-xl ${cfg.bg} items-center justify-center mt-0.5`}>
@@ -208,7 +208,7 @@ export default function NotificationsScreen() {
             intensity={15}
             tint={isDark ? 'dark' : 'light'}
             className={`p-4 rounded-2xl border flex-row items-start gap-3 ${
-              item.leido ? 'border-black/5 dark:border-white/5' : 'border-violet-500/20'
+              item.leido ? 'border-black/5 dark:border-white/10' : 'border-violet-500/20'
             }`}
           >
             <View className={`w-10 h-10 rounded-xl ${iconConfig.bg} items-center justify-center mt-0.5`}>

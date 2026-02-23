@@ -88,7 +88,7 @@ export default function SpacesManagement({
                 key={space.id}
                 intensity={15}
                 tint={isDark ? 'dark' : 'light'}
-                className="p-4 rounded-2xl border border-black/5 dark:border-white/5"
+                className="p-4 rounded-2xl border border-black/5 dark:border-white/10"
               >
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 mr-3">

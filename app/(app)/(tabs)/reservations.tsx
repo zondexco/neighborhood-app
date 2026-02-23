@@ -228,7 +228,7 @@ export default function ReservationsScreen() {
                     <LiquidView
                       intensity={15}
                       tint={isDark ? 'dark' : 'light'}
-                      className="p-6 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-3"
+                      className="p-6 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-3"
                     >
                       <Calendar color="#60a5fa" size={32} />
                       <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">
@@ -252,7 +252,7 @@ export default function ReservationsScreen() {
                             <LiquidView
                               intensity={15}
                               tint={isDark ? 'dark' : 'light'}
-                              className={`p-4 rounded-2xl border border-black/5 dark:border-white/5 ${isPast ? 'opacity-60' : ''}`}
+                              className={`p-4 rounded-2xl border border-black/5 dark:border-white/10 ${isPast ? 'opacity-60' : ''}`}
                             >
                               <View className="flex-row items-start justify-between mb-2">
                                 <View className="flex-1 mr-2">

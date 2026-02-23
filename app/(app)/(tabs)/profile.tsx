@@ -234,7 +234,7 @@ export default function ProfileScreen() {
             {/* Info Cards */}
             <View className="gap-3 mb-6">
               {email && (
-                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                   <View className="flex-row items-center gap-3">
                     <View className="w-10 h-10 rounded-full bg-blue-500/20 items-center justify-center">
                       <Mail color="#60a5fa" size={20} />
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
               )}
 
               {condominioName && (
-                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                   <View className="flex-row items-center gap-3">
                     <View className="w-10 h-10 rounded-full bg-green-500/20 items-center justify-center">
                       <Building2 color="#4ade80" size={20} />
@@ -273,7 +273,7 @@ export default function ProfileScreen() {
 
               <View className="gap-3">
                 {/* Theme toggle */}
-                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                   <View className="flex-row items-center gap-3 mb-3">
                     <View className="w-10 h-10 rounded-full bg-yellow-500/20 items-center justify-center">
                       {darkMode ? <Moon color="#facc15" size={20} /> : <Sun color="#facc15" size={20} />}
@@ -312,7 +312,7 @@ export default function ProfileScreen() {
                 </LiquidView>
 
                 {/* Text size */}
-                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                   <View className="flex-row items-center gap-3 mb-3">
                     <View className="w-10 h-10 rounded-full bg-blue-500/20 items-center justify-center">
                       <Type color="#60a5fa" size={20} />
@@ -364,7 +364,7 @@ export default function ProfileScreen() {
 
                 {/* Haptic feedback (only on native) */}
                 {Platform.OS !== 'web' && (
-                  <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                  <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                     <Pressable
                       onPress={() => {
                         const next = !hapticEnabled;
@@ -399,7 +399,7 @@ export default function ProfileScreen() {
 
                 {/* Biometric login (only on native + hardware available) */}
                 {biometricAvailable && (
-                  <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                  <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                     <Pressable onPress={handleBiometricToggle} className="flex-row items-center gap-3">
                       <View className="w-10 h-10 rounded-full bg-purple-500/20 items-center justify-center">
                         {biometricType === 'face'
@@ -433,7 +433,7 @@ export default function ProfileScreen() {
             <View className="gap-3 mb-10">
               <Pressable
                 onPress={handleLogout}
-                className="flex-row items-center gap-3 p-4 rounded-2xl border border-black/5 dark:border-white/5 active:opacity-70"
+                className="flex-row items-center gap-3 p-4 rounded-2xl border border-black/5 dark:border-white/10 active:opacity-70"
                 style={{ backgroundColor: darkMode ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.06)' }}
               >
                 <View className="w-10 h-10 rounded-full bg-red-500/20 items-center justify-center">
@@ -447,7 +447,7 @@ export default function ProfileScreen() {
 
               <Pressable
                 onPress={handleClearCache}
-                className="flex-row items-center gap-3 p-4 rounded-2xl border border-black/5 dark:border-white/5 active:opacity-70"
+                className="flex-row items-center gap-3 p-4 rounded-2xl border border-black/5 dark:border-white/10 active:opacity-70"
                 style={{ backgroundColor: darkMode ? 'rgba(239,68,68,0.05)' : 'rgba(239,68,68,0.04)' }}
               >
                 <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">

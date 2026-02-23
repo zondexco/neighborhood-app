@@ -271,7 +271,7 @@ export default function HomeScreen() {
                 {isResidente && apartmentInfo && (
                   <View>
                     <Text className="text-neutral-950 dark:text-white text-lg font-bold mb-3">Mi Apartamento</Text>
-                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                       <View className="flex-row items-center gap-3 mb-3">
                         <View className="w-10 h-10 rounded-full bg-indigo-500/20 items-center justify-center">
                           <Building2 color="#818cf8" size={20} />
@@ -322,7 +322,7 @@ export default function HomeScreen() {
                   </View>
 
                   {summary.packages_pending === 0 ? (
-                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-2">
+                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
                       <Package color="#4ade80" size={28} />
                       <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin paquetes pendientes</Text>
                     </LiquidView>
@@ -333,7 +333,7 @@ export default function HomeScreen() {
                           key={pkg.id}
                           intensity={15}
                           tint="dark"
-                          className="flex-1 p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          className="flex-1 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                           style={isTablet ? { minWidth: '45%' } : undefined}
                         >
                           <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">
@@ -356,12 +356,12 @@ export default function HomeScreen() {
                 <View>
                   <Text className="text-neutral-950 dark:text-white text-lg font-bold mb-3">Próxima Reserva</Text>
                   {!summary.next_reservation ? (
-                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-2">
+                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
                       <Calendar color="#60a5fa" size={28} />
                       <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin reservas próximas</Text>
                     </LiquidView>
                   ) : (
-                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
                       <View className="flex-row items-center gap-3">
                         <View className="w-10 h-10 rounded-full bg-blue-500/20 items-center justify-center">
                           <Calendar color="#60a5fa" size={20} />
@@ -387,7 +387,7 @@ export default function HomeScreen() {
                 <View>
                   <Text className="text-neutral-950 dark:text-white text-lg font-bold mb-3">Comunicados</Text>
                   {summary.recent_news.length === 0 ? (
-                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/5 items-center gap-2">
+                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
                       <Megaphone color="#a78bfa" size={28} />
                       <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin comunicados recientes</Text>
                     </LiquidView>
@@ -402,7 +402,7 @@ export default function HomeScreen() {
                           <LiquidView
                             intensity={15}
                             tint="dark"
-                            className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                            className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                           >
                             <View className="w-2 h-2 rounded-full bg-purple-500 mt-1" />
                             <View className="flex-1">

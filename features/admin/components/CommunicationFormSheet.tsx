@@ -260,7 +260,7 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
                       setIcono(opt.value);
                       setShowIconPicker(false);
                     }}
-                    className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${
+                    className={`px-4 py-3 border-b border-black/5 dark:border-white/10 ${
                       opt.value === icono ? 'bg-violet-500/10' : ''
                     }`}
                   >

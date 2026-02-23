@@ -206,7 +206,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
                     <LiquidView
                       intensity={15}
                       tint="dark"
-                      className="mt-1 rounded-2xl border border-black/5 dark:border-white/5 overflow-hidden"
+                      className="mt-1 rounded-2xl border border-black/5 dark:border-white/10 overflow-hidden"
                       style={{ maxHeight: 220 }}
                     >
                       {loadingApts ? (
@@ -230,7 +230,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
                                 setSelectedApartment(apt);
                                 setShowApartmentPicker(false);
                               }}
-                              className={`px-4 py-3 border-b border-black/5 dark:border-white/5 ${selectedApartment?.id === apt.id ? 'bg-amber-500/10' : ''}`}
+                              className={`px-4 py-3 border-b border-black/5 dark:border-white/10 ${selectedApartment?.id === apt.id ? 'bg-amber-500/10' : ''}`}
                             >
                               <Text className={`text-sm ${selectedApartment?.id === apt.id ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-neutral-950 dark:text-white'}`}>
                                 {apt.label}

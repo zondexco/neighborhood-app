@@ -271,7 +271,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                       intensity={15}
                       tint="dark"
                       className={`p-4 rounded-2xl border ${
-                        selectedSpace?.id === space.id ? 'border-blue-500/50' : 'border-black/5 dark:border-white/5'
+                        selectedSpace?.id === space.id ? 'border-blue-500/50' : 'border-black/5 dark:border-white/10'
                       }`}
                     >
                       <Text className="text-neutral-950 dark:text-white font-semibold text-base">{space.nombre}</Text>
@@ -382,7 +382,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
             <LiquidView
               intensity={15}
               tint="dark"
-              className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+              className="p-3 rounded-xl border border-black/5 dark:border-white/10 flex-row items-center justify-between"
             >
               <Text className="text-neutral-500 dark:text-neutral-400 text-sm">Hora de fin estimada</Text>
               <Text className="text-neutral-950 dark:text-white font-semibold">
@@ -394,7 +394,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <LiquidView
                 intensity={15}
                 tint="dark"
-                className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center justify-between"
+                className="p-3 rounded-xl border border-black/5 dark:border-white/10 flex-row items-center justify-between"
               >
                 <Text className="text-neutral-500 dark:text-neutral-400 text-sm">Costo estimado</Text>
                 <Text className="text-green-600 dark:text-green-400 font-bold">
@@ -450,7 +450,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
           <View className="gap-4">
             <Text className="text-neutral-950 dark:text-white font-semibold text-base mb-2">Resumen de tu reserva</Text>
 
-            <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-3">
+            <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10 gap-3">
               <View className="flex-row justify-between">
                 <Text className="text-neutral-600 dark:text-neutral-400">Espacio</Text>
                 <Text className="text-neutral-950 dark:text-white font-medium">{selectedSpace?.nombre}</Text>

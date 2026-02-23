@@ -195,7 +195,7 @@ export default function UsersScreen() {
                         <LiquidView
                           intensity={15}
                           tint={isDark ? 'dark' : 'light'}
-                          className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                         >
                           {/* Avatar */}
                           <View

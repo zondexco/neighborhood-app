@@ -194,7 +194,7 @@ export default function CondominioDetailScreen() {
             <LiquidView
               intensity={15}
               tint={isDark ? 'dark' : 'light'}
-              className="p-4 rounded-2xl border border-black/5 dark:border-white/5 gap-3 mb-4"
+              className="p-4 rounded-2xl border border-black/5 dark:border-white/10 gap-3 mb-4"
             >
               {infoRows.map((row) => {
                 const Icon = row.icon;
@@ -221,7 +221,7 @@ export default function CondominioDetailScreen() {
             <LiquidView
               intensity={15}
               tint={isDark ? 'dark' : 'light'}
-              className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center justify-between mb-4"
+              className="p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center justify-between mb-4"
             >
               <View className="flex-row items-center gap-3 flex-1">
                 <ShieldCheck color={condominio.permite_soporte ? '#06b6d4' : '#a3a3a3'} size={20} />
@@ -309,7 +309,7 @@ export default function CondominioDetailScreen() {
                         <LiquidView
                           intensity={15}
                           tint={isDark ? 'dark' : 'light'}
-                          className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
+                          className="p-3 rounded-xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
                         >
                           <View className="w-10 h-10 rounded-full bg-violet-500/15 items-center justify-center">
                             <Text className="text-violet-600 dark:text-violet-400 font-bold text-sm">
