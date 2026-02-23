@@ -75,15 +75,36 @@ export default function TabLayout() {
         },
         tabBarBackground: () =>
           !hasSidebar ? (
-            // Wrapper sin overflow:hidden para que GlassView (UIVisualEffectView)
-            // pueda renderizar correctamente en iOS sin doble clipping.
             <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+              {/*
+                Capa 1 — Fallback sólido con overflow:hidden propio para respetar
+                borderRadius. Visible cuando blur/glass no está disponible
+                (Android, Reduce Transparency en iOS, etc.)
+              */}
+              <View
+                pointerEvents="none"
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    borderRadius: 32,
+                    overflow: 'hidden',
+                    backgroundColor: isDark
+                      ? 'rgba(18,18,18,0.86)'
+                      : 'rgba(248,248,248,0.86)',
+                  },
+                ]}
+              />
+              {/*
+                Capa 2 — Glass/blur sobre el fallback. LiquidView maneja
+                su propio overflow:hidden sin anidarse dentro de otro,
+                evitando el doble clipping que bloquea UIVisualEffectView.
+              */}
               <LiquidView
-                intensity={60}
+                intensity={80}
                 tint={isDark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
                 style={[StyleSheet.absoluteFillObject, { borderRadius: 32 }]}
               />
-              {/* Borde como capa overlay separada */}
+              {/* Capa 3 — Borde overlay */}
               <View
                 pointerEvents="none"
                 style={[
