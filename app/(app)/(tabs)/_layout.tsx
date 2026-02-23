@@ -2,7 +2,6 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Home, Calendar, Package, User, Shield, Code2 } from 'lucide-react-native';
 import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidView } from '@/components/native/LiquidView';
 import { HapticTab } from '@/components/haptic-tab';
@@ -63,7 +62,7 @@ export default function TabLayout() {
           borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: border,
           borderRadius: hasSidebar ? 0 : 32,
-          overflow: 'hidden',
+          overflow: 'visible',
           backgroundColor: hasSidebar ? tabSidebarBg : 'transparent',
           elevation: 0,
           paddingTop: hasSidebar ? 16 : 4,
@@ -76,26 +75,17 @@ export default function TabLayout() {
         },
         tabBarBackground: () =>
           !hasSidebar ? (
-            Platform.OS === 'ios' ? (
-              <BlurView
-                pointerEvents="none"
-                intensity={85}
-                tint={isDark ? 'systemMaterialDark' : 'systemMaterialLight'}
-                style={StyleSheet.absoluteFillObject}
-              />
-            ) : (
-              <View
-                pointerEvents="none"
-                style={[
-                  StyleSheet.absoluteFillObject,
-                  {
-                    backgroundColor: isDark
-                      ? 'rgba(10, 10, 10, 0.88)'
-                      : 'rgba(255, 255, 255, 0.92)',
-                  },
-                ]}
-              />
-            )
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFillObject,
+                {
+                  backgroundColor: isDark
+                    ? 'rgba(10, 10, 10, 0.88)'
+                    : 'rgba(255, 255, 255, 0.92)',
+                },
+              ]}
+            />
           ) : undefined,
         tabBarShowLabel: true,
         tabBarLabelStyle: {

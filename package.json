@@ -17,8 +17,10 @@
     "test:ios:sim": "expo start --ios",
     "test:web": "expo start --web",
     "test:web:prod": "expo export --platform web && bunx serve dist",
-    "build:ios": "bunx eas build --platform ios",
-    "build:android": "bunx eas build --platform android",
+    "build:ios": "bunx eas-cli@latest build --platform ios",
+    "build:android": "bunx eas-cli@latest build --platform android",
+    "build:android:apk": "bunx eas-cli@latest build --platform android --profile preview",
+    "build:android:internal": "bunx eas-cli@latest build --platform android --profile development",
     "build:web": "expo export --platform web",
     "lint": "expo lint"
   },
