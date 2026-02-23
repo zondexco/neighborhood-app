@@ -44,3 +44,18 @@ export interface UpdateCondominioPayload {
   permite_soporte?: boolean;
   estado?: string;
 }
+
+export interface CreateAdminPayload {
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+}
+
+export interface UpdateAdminPayload {
+  nombres?: string;
+  apellidos?: string;
+  email?: string;
+  telefono?: string;
+  estado?: string;
+}

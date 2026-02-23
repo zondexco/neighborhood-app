@@ -6,14 +6,12 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, router } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {
   ArrowLeft,
-  Building2,
   MapPin,
   Phone,
   Mail,
@@ -23,6 +21,7 @@ import {
   Users,
   Zap,
   Edit3,
+  Plus,
 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
@@ -32,10 +31,10 @@ import type { AuthState } from '@/features/auth/hooks/useAuth';
 import {
   fetchCondominios,
   fetchCondominioAdmins,
-  updateCondominio,
   impersonate,
 } from '@/features/dev/api';
 import CondominioFormSheet from '@/features/dev/components/CondominioFormSheet';
+import AdminFormSheet from '@/features/dev/components/AdminFormSheet';
 import type { DevCondominio, CondominioAdmin } from '@/features/dev/types';
 
 export default function CondominioDetailScreen() {
@@ -46,9 +45,10 @@ export default function CondominioDetailScreen() {
   const [condominio, setCondominio] = useState<DevCondominio | null>(null);
   const [admins, setAdmins] = useState<CondominioAdmin[]>([]);
   const [loading, setLoading] = useState(true);
-  const [togglingSupport, setTogglingSupport] = useState(false);
   const [impersonating, setImpersonating] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<CondominioAdmin | null>(null);
   const formRef = useRef<BottomSheet>(null);
+  const adminFormRef = useRef<BottomSheet>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -74,18 +74,6 @@ export default function CondominioDetailScreen() {
     }, [load]),
   );
 
-  const toggleSupport = useCallback(async (value: boolean) => {
-    if (!condominio) return;
-    setTogglingSupport(true);
-    try {
-      await updateCondominio(condominio.id, { permite_soporte: value });
-      setCondominio((prev) => (prev ? { ...prev, permite_soporte: value } : prev));
-    } catch {
-      Alert.alert('Error', 'No se pudo actualizar');
-    } finally {
-      setTogglingSupport(false);
-    }
-  }, [condominio]);
 
   const handleImpersonate = useCallback(async () => {
     if (!condominio) return;
@@ -220,30 +208,30 @@ export default function CondominioDetailScreen() {
               })}
             </LiquidView>
 
-            {/* Soporte toggle */}
+            {/* Soporte status (read-only — admin del conjunto lo activa) */}
             <LiquidView
               intensity={15}
               tint={isDark ? 'dark' : 'light'}
               className="p-4 rounded-2xl border border-black/5 dark:border-white/5 flex-row items-center justify-between mb-4"
             >
-              <View className="flex-row items-center gap-3 flex-1 mr-3">
-                <ShieldCheck color="#06b6d4" size={20} />
+              <View className="flex-row items-center gap-3 flex-1">
+                <ShieldCheck color={condominio.permite_soporte ? '#06b6d4' : '#a3a3a3'} size={20} />
                 <View className="flex-1">
-                  <Text className="text-neutral-950 dark:text-white font-semibold">
+                  <Text className="text-neutral-950 dark:text-white font-semibold text-sm">
                     Acceso de soporte
                   </Text>
                   <Text className="text-neutral-500 dark:text-neutral-400 text-xs">
-                    {condominio.permite_soporte ? 'Habilitado' : 'Deshabilitado'}
+                    {condominio.permite_soporte
+                      ? 'Habilitado por el administrador'
+                      : 'No habilitado por el administrador'}
                   </Text>
                 </View>
               </View>
-              <Switch
-                value={condominio.permite_soporte}
-                onValueChange={toggleSupport}
-                disabled={togglingSupport}
-                trackColor={{ false: isDark ? '#333' : '#d4d4d4', true: '#06b6d4' }}
-                thumbColor="white"
-              />
+              <View className={`px-2.5 py-1 rounded-full ${condominio.permite_soporte ? 'bg-cyan-500/20' : 'bg-neutral-500/20'}`}>
+                <Text className={`text-xs font-bold ${condominio.permite_soporte ? 'text-cyan-600 dark:text-cyan-400' : 'text-neutral-500 dark:text-neutral-400'}`}>
+                  {condominio.permite_soporte ? 'Activo' : 'Inactivo'}
+                </Text>
+              </View>
             </LiquidView>
 
             {/* Disguise button */}
@@ -267,9 +255,22 @@ export default function CondominioDetailScreen() {
 
             {/* Admins section */}
             <View>
-              <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-3">
-                Administradores ({admins.length})
-              </Text>
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                  Administradores ({admins.length})
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setEditingAdmin(null);
+                    adminFormRef.current?.snapToIndex(0);
+                  }}
+                  className="flex-row items-center gap-1 bg-violet-600 px-3 py-1.5 rounded-full"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                >
+                  <Plus color="white" size={14} />
+                  <Text className="text-white font-semibold text-xs">Agregar</Text>
+                </Pressable>
+              </View>
               {admins.length === 0 ? (
                 <View className="items-center py-8">
                   <Users color={iconMuted} size={32} />
@@ -279,43 +280,50 @@ export default function CondominioDetailScreen() {
                 </View>
               ) : (
                 <View className="gap-3">
-                  {admins.map((admin) => (
-                    <LiquidView
-                      key={admin.id}
-                      intensity={15}
-                      tint={isDark ? 'dark' : 'light'}
-                      className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
-                    >
-                      <View className="w-10 h-10 rounded-full bg-violet-500/15 items-center justify-center">
-                        <Text className="text-violet-600 dark:text-violet-400 font-bold text-sm">
-                          {(admin.nombre?.charAt(0) ?? '') + (admin.apellido?.charAt(0) ?? '')}
-                        </Text>
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-neutral-950 dark:text-white font-semibold text-sm">
-                          {admin.nombre} {admin.apellido}
-                        </Text>
-                        <Text className="text-neutral-500 dark:text-neutral-400 text-xs">
-                          {admin.email}
-                        </Text>
-                      </View>
-                      <View
-                        className={`px-2 py-0.5 rounded-full ${
-                          admin.estado === 'activo' ? 'bg-emerald-500/15' : 'bg-red-500/15'
-                        }`}
+                  {admins.map((adm) => {
+                    const estadoConfig: Record<string, { label: string; bg: string; text: string }> = {
+                      activo: { label: 'Activo', bg: 'bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400' },
+                      suspendido: { label: 'Suspendido', bg: 'bg-yellow-500/15', text: 'text-yellow-600 dark:text-yellow-400' },
+                      inactivo: { label: 'Inactivo', bg: 'bg-red-500/15', text: 'text-red-600 dark:text-red-400' },
+                    };
+                    const st = estadoConfig[adm.estado] ?? estadoConfig.inactivo;
+
+                    return (
+                      <Pressable
+                        key={adm.id}
+                        onPress={() => {
+                          setEditingAdmin(adm);
+                          adminFormRef.current?.snapToIndex(0);
+                        }}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                       >
-                        <Text
-                          className={`text-xs font-semibold ${
-                            admin.estado === 'activo'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-red-600 dark:text-red-400'
-                          }`}
+                        <LiquidView
+                          intensity={15}
+                          tint={isDark ? 'dark' : 'light'}
+                          className="p-3 rounded-xl border border-black/5 dark:border-white/5 flex-row items-center gap-3"
                         >
-                          {admin.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                        </Text>
-                      </View>
-                    </LiquidView>
-                  ))}
+                          <View className="w-10 h-10 rounded-full bg-violet-500/15 items-center justify-center">
+                            <Text className="text-violet-600 dark:text-violet-400 font-bold text-sm">
+                              {(adm.nombre?.charAt(0) ?? '') + (adm.apellido?.charAt(0) ?? '')}
+                            </Text>
+                          </View>
+                          <View className="flex-1">
+                            <Text className="text-neutral-950 dark:text-white font-semibold text-sm">
+                              {adm.nombre} {adm.apellido}
+                            </Text>
+                            <Text className="text-neutral-500 dark:text-neutral-400 text-xs">
+                              {adm.email}
+                            </Text>
+                          </View>
+                          <View className={`px-2 py-0.5 rounded-full ${st.bg}`}>
+                            <Text className={`text-xs font-semibold ${st.text}`}>
+                              {st.label}
+                            </Text>
+                          </View>
+                        </LiquidView>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               )}
             </View>
@@ -324,6 +332,12 @@ export default function CondominioDetailScreen() {
       </SafeAreaView>
 
       <CondominioFormSheet ref={formRef} condominio={condominio} onSaved={load} />
+      <AdminFormSheet
+        ref={adminFormRef}
+        condominioId={id!}
+        admin={editingAdmin}
+        onSaved={load}
+      />
     </View>
   );
 }

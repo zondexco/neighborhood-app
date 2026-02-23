@@ -4,6 +4,8 @@ import type {
   CondominioAdmin,
   CreateCondominioPayload,
   UpdateCondominioPayload,
+  CreateAdminPayload,
+  UpdateAdminPayload,
 } from './types';
 
 export async function fetchCondominios(): Promise<{ data: DevCondominio[]; total: number }> {
@@ -33,6 +35,30 @@ export async function fetchCondominioAdmins(
 ): Promise<{ data: CondominioAdmin[]; total: number }> {
   const res = await api.get(`/dev/condominios/${condominioId}/admins`);
   return res.data;
+}
+
+export async function createAdmin(
+  condominioId: string,
+  payload: CreateAdminPayload,
+): Promise<{ user: CondominioAdmin; pin_temporal: string }> {
+  const res = await api.post(`/dev/condominios/${condominioId}/admins`, payload);
+  return res.data;
+}
+
+export async function updateAdmin(
+  condominioId: string,
+  userId: string,
+  payload: UpdateAdminPayload,
+): Promise<CondominioAdmin> {
+  const res = await api.put(`/dev/condominios/${condominioId}/admins/${userId}`, payload);
+  return res.data;
+}
+
+export async function deleteAdmin(
+  condominioId: string,
+  userId: string,
+): Promise<void> {
+  await api.delete(`/dev/condominios/${condominioId}/admins/${userId}`);
 }
 
 export async function impersonate(
