@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { LiquidView } from '@/components/native/LiquidView';
-import { Bell, Package, Calendar, Megaphone, ChevronRight, RefreshCw, HelpCircle } from 'lucide-react-native';
+import { Bell, Package, Calendar, Megaphone, ChevronRight, RefreshCw, HelpCircle, Building2, Users } from 'lucide-react-native';
 import { Breakpoints } from '@/constants/theme';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -25,6 +25,23 @@ import CommunicationDetailSheet from '@/features/communications/components/Commu
 import type { Communication } from '@/features/communications/types';
 
 // ── Types ────────────────────────────────────────────────────
+interface ApartmentMember {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: string;
+}
+
+interface ApartmentInfo {
+  id: string;
+  numero: string;
+  torre: string;
+  bloque: string;
+  piso: number;
+  label: string;
+}
+
 interface PendingPackage {
   id: string;
   carrier: string;
@@ -73,6 +90,9 @@ export default function HomeScreen() {
   const nombre = useAuth((s: AuthState) => s.nombre);
   const apellido = useAuth((s: AuthState) => s.apellido);
   const email = useAuth((s: AuthState) => s.email);
+  const role = useAuth((s: AuthState) => s.role);
+  const apartmentId = useAuth((s: AuthState) => s.apartmentId);
+  const isResidente = role === 'residente';
 
   const displayName = nombre
     ? `${nombre}${apellido ? ' ' + apellido : ''}`
@@ -82,6 +102,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [apartmentInfo, setApartmentInfo] = useState<ApartmentInfo | null>(null);
+  const [apartmentMembers, setApartmentMembers] = useState<ApartmentMember[]>([]);
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const infoSheetRef = useRef<BottomSheet>(null);
   const detailSheetRef = useRef<BottomSheet>(null);
@@ -90,18 +112,47 @@ export default function HomeScreen() {
     setLoading(true);
     setError(null);
     try {
-      const [res, count] = await Promise.all([
+      const promises: Promise<any>[] = [
         api.get<DashboardSummary>('/dashboard/summary'),
         fetchUnreadCount().catch(() => 0),
-      ]);
-      setSummary(res.data);
-      setUnreadCount(count);
+      ];
+
+      if (isResidente && apartmentId) {
+        promises.push(
+          api.get(`/apartments/${apartmentId}`).catch(() => null),
+          api.get<{ data: ApartmentMember[] }>(`/apartments/${apartmentId}/members`).catch(() => null),
+        );
+      }
+
+      const results = await Promise.all(promises);
+      setSummary(results[0].data);
+      setUnreadCount(results[1]);
+
+      if (isResidente && apartmentId && results[2]) {
+        const apt = results[2].data;
+        const parts: string[] = [];
+        if (apt.torre) parts.push(`Torre ${apt.torre}`);
+        if (apt.piso) parts.push(`Piso ${apt.piso}`);
+        if (apt.numero) parts.push(`Apt ${apt.numero}`);
+        setApartmentInfo({
+          id: apt.id,
+          numero: apt.numero,
+          torre: apt.torre ?? '',
+          bloque: apt.bloque ?? '',
+          piso: apt.piso ?? 0,
+          label: parts.join(' • ') || `Apt ${apt.numero}`,
+        });
+      }
+
+      if (isResidente && apartmentId && results[3]) {
+        setApartmentMembers(results[3].data?.data ?? []);
+      }
     } catch {
       setError('No se pudo cargar la información. Verifica tu conexión.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isResidente, apartmentId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -215,6 +266,47 @@ export default function HomeScreen() {
             {/* Content */}
             {!loading && !error && summary && (
               <View className="gap-6">
+
+                {/* Mi Apartamento — solo para residentes */}
+                {isResidente && apartmentInfo && (
+                  <View>
+                    <Text className="text-neutral-950 dark:text-white text-lg font-bold mb-3">Mi Apartamento</Text>
+                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                      <View className="flex-row items-center gap-3 mb-3">
+                        <View className="w-10 h-10 rounded-full bg-indigo-500/20 items-center justify-center">
+                          <Building2 color="#818cf8" size={20} />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-neutral-500 text-xs">Unidad</Text>
+                          <Text className="text-neutral-950 dark:text-white font-semibold">{apartmentInfo.label}</Text>
+                        </View>
+                      </View>
+                      {apartmentMembers.length > 0 && (
+                        <View>
+                          <View className="flex-row items-center gap-1.5 mb-2">
+                            <Users color={iconSubtle} size={13} />
+                            <Text className="text-neutral-500 text-xs font-medium">Miembros</Text>
+                          </View>
+                          <View className="gap-2">
+                            {apartmentMembers.map((member) => (
+                              <View key={member.id} className="flex-row items-center gap-2">
+                                <View className="w-7 h-7 rounded-full bg-purple-500/20 items-center justify-center">
+                                  <Text className="text-purple-400 text-[10px] font-bold">
+                                    {member.nombre.charAt(0).toUpperCase()}{member.apellido.charAt(0).toUpperCase()}
+                                  </Text>
+                                </View>
+                                <Text className="text-neutral-950 dark:text-white text-sm font-medium flex-1">
+                                  {member.nombre} {member.apellido}
+                                </Text>
+                                <Text className="text-neutral-500 text-xs capitalize">{member.rol}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </LiquidView>
+                  </View>
+                )}
 
                 {/* Paquetes pendientes */}
                 <View>

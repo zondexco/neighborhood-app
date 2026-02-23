@@ -19,6 +19,7 @@ import type { AuthState } from '@/features/auth/hooks/useAuth';
 import {
   fetchMyReservations,
   fetchAllReservations,
+  fetchApartmentReservations,
   fetchSpaces,
 } from '@/features/reservations/api';
 import type { Reservation, Space } from '@/features/reservations/types';
@@ -56,6 +57,7 @@ export default function ReservationsScreen() {
   const userId = useAuth((s: AuthState) => s.userId);
   const role = useAuth((s: AuthState) => s.role);
   const isAdmin = useAuth((s: AuthState) => s.isAdmin);
+  const apartmentId = useAuth((s: AuthState) => s.apartmentId);
   const isEmployee = role === 'empleado';
   const canCreate = !isEmployee; // residentes y admins pueden crear
 
@@ -77,11 +79,15 @@ export default function ReservationsScreen() {
     setLoading(true);
     setError(null);
     try {
-      // Residentes ven solo las suyas, empleados y admins ven todas
+      // Admins y empleados ven todas; residentes ven las de su apartamento (o solo las suyas si no tienen apartamento)
       const resData =
-        !isAdmin && !isEmployee && userId
-          ? await fetchMyReservations(userId)
-          : await fetchAllReservations();
+        isAdmin || isEmployee
+          ? await fetchAllReservations()
+          : apartmentId
+            ? await fetchApartmentReservations(apartmentId)
+            : userId
+              ? await fetchMyReservations(userId)
+              : await fetchAllReservations();
       setReservations(resData.data ?? []);
 
       // Admins también cargan espacios para gestión
@@ -94,7 +100,7 @@ export default function ReservationsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [userId, isAdmin, isEmployee]);
+  }, [userId, isAdmin, isEmployee, apartmentId]);
 
   useFocusEffect(
     useCallback(() => {

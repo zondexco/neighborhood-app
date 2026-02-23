@@ -32,6 +32,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
 
     const [apartments, setApartments] = useState<ApartmentOption[]>([]);
     const [loadingApts, setLoadingApts] = useState(false);
+    const [aptsError, setAptsError] = useState<string | null>(null);
     const [showApartmentPicker, setShowApartmentPicker] = useState(false);
 
     const [selectedApartment, setSelectedApartment] = useState<ApartmentOption | null>(null);
@@ -78,15 +79,20 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
       setShowApartmentPicker(false);
     }, [pkg]);
 
+    const loadApartments = useCallback(() => {
+      setLoadingApts(true);
+      setAptsError(null);
+      fetchApartments()
+        .then(setApartments)
+        .catch(() => setAptsError('No se pudieron cargar los apartamentos'))
+        .finally(() => setLoadingApts(false));
+    }, []);
+
     useEffect(() => {
-      if (!isEditing || canEditAllFields) {
-        setLoadingApts(true);
-        fetchApartments()
-          .then(setApartments)
-          .catch(() => {})
-          .finally(() => setLoadingApts(false));
+      if (sheetOpen && (!isEditing || canEditAllFields)) {
+        loadApartments();
       }
-    }, [isEditing, canEditAllFields]);
+    }, [sheetOpen, isEditing, canEditAllFields, loadApartments]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -205,6 +211,16 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
                     >
                       {loadingApts ? (
                         <ActivityIndicator color={activityColor} style={{ padding: 16 }} />
+                      ) : aptsError ? (
+                        <View style={{ padding: 16, alignItems: 'center', gap: 8 }}>
+                          <Text style={{ color: '#ef4444', fontSize: 12, textAlign: 'center' }}>{aptsError}</Text>
+                          <Pressable
+                            onPress={loadApartments}
+                            style={{ backgroundColor: 'rgba(245,158,11,0.15)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
+                          >
+                            <Text style={{ color: '#f59e0b', fontSize: 12, fontWeight: '600' }}>Reintentar</Text>
+                          </Pressable>
+                        </View>
                       ) : (
                         <ScrollView nestedScrollEnabled>
                           {apartments.map((apt) => (

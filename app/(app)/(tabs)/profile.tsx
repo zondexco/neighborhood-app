@@ -23,7 +23,9 @@ import {
   Settings,
   Fingerprint,
   ScanFace,
+  Vibrate,
 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
@@ -70,8 +72,10 @@ export default function ProfileScreen() {
   // Persisted settings
   const theme = useSettings((s) => s.theme);
   const textSizeIndex = useSettings((s) => s.textSizeIndex);
+  const hapticEnabled = useSettings((s) => s.hapticEnabled);
   const setTheme = useSettings((s) => s.setTheme);
   const setTextSizeIndex = useSettings((s) => s.setTextSizeIndex);
+  const setHapticEnabled = useSettings((s) => s.setHapticEnabled);
   const darkMode = theme === 'dark';
 
   const { iconMuted } = useThemeColors();
@@ -357,6 +361,41 @@ export default function ProfileScreen() {
                     </Pressable>
                   </View>
                 </LiquidView>
+
+                {/* Haptic feedback (only on native) */}
+                {Platform.OS !== 'web' && (
+                  <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                    <Pressable
+                      onPress={() => {
+                        const next = !hapticEnabled;
+                        setHapticEnabled(next);
+                        if (next) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        }
+                      }}
+                      className="flex-row items-center gap-3"
+                    >
+                      <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">
+                        <Vibrate color="#fb923c" size={20} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-neutral-950 dark:text-white font-medium">Vibración / Haptics</Text>
+                        <Text className="text-neutral-500 text-xs">
+                          {hapticEnabled ? 'Activado — retroalimentación táctil' : 'Desactivado'}
+                        </Text>
+                      </View>
+                      <Switch
+                        value={hapticEnabled}
+                        onValueChange={(v) => {
+                          setHapticEnabled(v);
+                          if (v) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        }}
+                        trackColor={{ false: darkMode ? '#3f3f46' : '#d4d4d8', true: '#f97316' }}
+                        thumbColor={hapticEnabled ? '#ea580c' : (darkMode ? '#71717a' : '#a1a1aa')}
+                      />
+                    </Pressable>
+                  </LiquidView>
+                )}
 
                 {/* Biometric login (only on native + hardware available) */}
                 {biometricAvailable && (

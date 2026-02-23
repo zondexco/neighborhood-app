@@ -80,12 +80,21 @@ export default function TabLayout() {
               style={[
                 StyleSheet.absoluteFillObject,
                 {
-                  backgroundColor: isDark
-                    ? 'rgba(10, 10, 10, 0.88)'
-                    : 'rgba(255, 255, 255, 0.92)',
+                  borderRadius: 32,
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: isDark
+                    ? 'rgba(255,255,255,0.12)'
+                    : 'rgba(0,0,0,0.07)',
                 },
               ]}
-            />
+            >
+              <LiquidView
+                intensity={60}
+                tint={isDark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
+                style={{ flex: 1 }}
+              />
+            </View>
           ) : undefined,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
@@ -116,7 +125,7 @@ export default function TabLayout() {
         },
         tabBarActiveBackgroundColor: hasSidebar
           ? isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
-          : 'transparent',
+          : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
         tabBarActiveTintColor: tabActiveTint,
         tabBarInactiveTintColor: tabInactiveTint,
         sceneStyle: {
