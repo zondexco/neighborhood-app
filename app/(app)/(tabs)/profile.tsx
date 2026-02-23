@@ -67,7 +67,7 @@ export default function ProfileScreen() {
     ? `${nombre}${apellido ? ' ' + apellido : ''}`
     : email?.split('@')[0] ?? 'Usuario';
 
-  const roleLabel = isAdmin ? 'Administrador' : (role ?? 'Residente');
+  const roleLabel = isAdmin ? 'Administrador' : (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Residente');
 
   // Persisted settings
   const theme = useSettings((s) => s.theme);
