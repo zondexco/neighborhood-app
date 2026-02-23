@@ -62,8 +62,15 @@ export default function TabLayout() {
           borderRightWidth: hasSidebar ? 1 : 0,
           borderRightColor: border,
           borderRadius: hasSidebar ? 0 : 32,
-          overflow: 'visible',
-          backgroundColor: hasSidebar ? tabSidebarBg : 'transparent',
+          // overflow: 'hidden' en Android clipea el borderRadius (sin perder sombra
+          // porque elevation:0). En iOS, el sistema clipea automáticamente el
+          // backgroundColor al borderRadius aunque overflow sea 'visible'.
+          overflow: hasSidebar ? 'visible' : Platform.OS === 'android' ? 'hidden' : 'visible',
+          // Fondo visible SIEMPRE — no depende de tabBarBackground.
+          // LiquidView en tabBarBackground agrega blur encima en iOS como bonus.
+          backgroundColor: hasSidebar
+            ? tabSidebarBg
+            : isDark ? 'rgba(18,18,18,0.82)' : 'rgba(248,248,248,0.82)',
           elevation: 0,
           paddingTop: hasSidebar ? 16 : 4,
           paddingBottom: hasSidebar ? 0 : 4,
@@ -75,36 +82,14 @@ export default function TabLayout() {
         },
         tabBarBackground: () =>
           !hasSidebar ? (
+            // tabBarStyle ya provee el backgroundColor base.
+            // Aquí solo agregamos blur (iOS) y borde encima.
             <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-              {/*
-                Capa 1 — Fallback sólido con overflow:hidden propio para respetar
-                borderRadius. Visible cuando blur/glass no está disponible
-                (Android, Reduce Transparency en iOS, etc.)
-              */}
-              <View
-                pointerEvents="none"
-                style={[
-                  StyleSheet.absoluteFillObject,
-                  {
-                    borderRadius: 32,
-                    overflow: 'hidden',
-                    backgroundColor: isDark
-                      ? 'rgba(18,18,18,0.86)'
-                      : 'rgba(248,248,248,0.86)',
-                  },
-                ]}
-              />
-              {/*
-                Capa 2 — Glass/blur sobre el fallback. LiquidView maneja
-                su propio overflow:hidden sin anidarse dentro de otro,
-                evitando el doble clipping que bloquea UIVisualEffectView.
-              */}
               <LiquidView
                 intensity={80}
                 tint={isDark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
                 style={[StyleSheet.absoluteFillObject, { borderRadius: 32 }]}
               />
-              {/* Capa 3 — Borde overlay */}
               <View
                 pointerEvents="none"
                 style={[
@@ -113,8 +98,8 @@ export default function TabLayout() {
                     borderRadius: 32,
                     borderWidth: 1,
                     borderColor: isDark
-                      ? 'rgba(255,255,255,0.12)'
-                      : 'rgba(0,0,0,0.07)',
+                      ? 'rgba(255,255,255,0.14)'
+                      : 'rgba(0,0,0,0.08)',
                   },
                 ]}
               />
