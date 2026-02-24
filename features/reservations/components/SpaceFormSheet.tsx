@@ -13,7 +13,7 @@ interface Props {
 }
 
 const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) => {
-  const snapPoints = useMemo(() => ['60%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
   const { bottom: safeBottom } = useSafeAreaInsets();
   const isEditing = space !== null;
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } = useThemeColors();
@@ -106,7 +106,7 @@ const SpaceFormSheet = forwardRef<BottomSheet, Props>(({ space, onSaved }, ref) 
       keyboardBlurBehavior="restore"
     >
       <BottomSheetScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 20 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 100 }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}

@@ -192,7 +192,7 @@ export default function LoginEmailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={s.flex1}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
