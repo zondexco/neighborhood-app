@@ -23,7 +23,7 @@ interface Props {
 }
 
 const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved }, ref) => {
-  const snapPoints = useMemo(() => ['70%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
   const isEditing = apartment !== null;
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } =
     useThemeColors();
@@ -148,7 +148,7 @@ const ApartmentFormSheet = forwardRef<BottomSheet, Props>(({ apartment, onSaved 
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}

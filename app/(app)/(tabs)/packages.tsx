@@ -74,6 +74,7 @@ export default function PackagesScreen() {
   const isResidente = role === 'residente';
   const isEmpleadoOrAdmin = isAdmin || role === 'empleado';
 
+  const [allPackages, setAllPackages] = useState<Pkg[]>([]);
   const [packages, setPackages] = useState<Pkg[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -93,24 +94,37 @@ export default function PackagesScreen() {
   const detailSheetRef = useRef<BottomSheet>(null);
   const formSheetRef = useRef<BottomSheet>(null);
 
-  // Derived filter options from loaded data
+  // Derived filter options from loaded data (using allPackages so they don't disappear when filtering)
   const carriers = useMemo(
-    () => [...new Set(packages.map((p) => p.carrier))].sort(),
-    [packages],
+    () => [...new Set(allPackages.map((p) => p.carrier))].sort(),
+    [allPackages],
   );
 
   const apartments = useMemo(() => {
     const seen = new Set<string>();
-    return packages
+    return allPackages
       .filter((p) => !seen.has(p.apartment_id) && seen.add(p.apartment_id))
       .map((p) => ({ id: p.apartment_id, label: p.apartment }));
-  }, [packages]);
+  }, [allPackages]);
 
   const load = useCallback(
     async (f: PackageFilters) => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch all packages without filters to populate the filter chips
+        const allRes = await fetchPackages({
+          status: 'all',
+          dateFilter: 'all',
+          apartmentId: null,
+          carrier: null,
+          search: '',
+          page: 1,
+          page_size: 1000,
+        });
+        setAllPackages(allRes.data ?? []);
+
+        // Fetch filtered packages
         const res = await fetchPackages({
           status: f.status,
           dateFilter: f.dateFilter,

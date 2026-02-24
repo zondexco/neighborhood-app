@@ -43,7 +43,7 @@ const ROLE_OPTIONS = [
 
 const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
   ({ communication, onSaved }, ref) => {
-    const snapPoints = useMemo(() => ['92%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const isEditing = communication !== null;
     const { isDark, bgCard, sheetHandle, iconPrimary, iconMuted, placeholderText, activityColor } =
       useThemeColors();
@@ -183,7 +183,7 @@ const CommunicationFormSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}

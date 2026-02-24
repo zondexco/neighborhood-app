@@ -23,7 +23,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
 
 const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
   ({ reservation, role, isAdmin, onUpdated }, ref) => {
-    const snapPoints = useMemo(() => ['55%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const { bottom: safeBottom } = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
@@ -107,7 +107,7 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}

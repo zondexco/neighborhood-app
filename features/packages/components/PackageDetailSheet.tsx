@@ -17,7 +17,7 @@ interface Props {
 
 const PackageDetailSheet = forwardRef<BottomSheet, Props>(
   ({ pkg, role, isAdmin, onUpdated, onEdit }, ref) => {
-    const snapPoints = useMemo(() => ['65%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
@@ -109,7 +109,7 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}

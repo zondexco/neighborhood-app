@@ -354,7 +354,7 @@ export default function AdminReservationsScreen() {
         ref={detailSheetRef}
         index={-1}
         snapPoints={['65%']}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
