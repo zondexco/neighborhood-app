@@ -2,7 +2,7 @@
   "expo": {
     "name": "neighborhood-app",
     "slug": "neighborhood-app",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "neighborhoodapp",
@@ -14,11 +14,11 @@
         "UIDesignRequiresCompatibility": false,
         "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.anonymous.neighborhood-app"
+      "bundleIdentifier": "dev.paral.neighborhood"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -31,7 +31,7 @@
         "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
       ],
-      "package": "com.anonymous.neighborhoodapp"
+      "package": "dev.paral.neighborhood"
     },
     "web": {
       "output": "static",
