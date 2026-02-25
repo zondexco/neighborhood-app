@@ -17,6 +17,7 @@ export function useThemeColors() {
     tabActiveTint:  isDark ? '#ffffff' : '#000000',
     tabInactiveTint:isDark ? '#a1a1aa' : '#71717a',
     tabSidebarBg:   isDark ? '#0a0a0a' : '#f9f9f9',
+    tabHover:       isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
     sceneBg:        isDark ? '#000000' : '#ffffff',
     placeholderText:isDark ? '#404040' : '#a3a3a3',
     sheetHandle:    isDark ? '#555555' : '#cccccc',
