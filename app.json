@@ -34,7 +34,7 @@
       "package": "dev.paral.neighborhood"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
