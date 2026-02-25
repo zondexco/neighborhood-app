@@ -1,15 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettings } from '@/features/settings/useSettings';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import type { AuthState } from '@/features/auth/hooks/useAuth';
 
 const EXPANDED_WIDTH = 240;
 const COLLAPSED_WIDTH = 68;
 const TRANSITION = 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)';
 
 export function WebSidebar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const router = useRouter();
+  const isAdmin = useAuth((s: AuthState) => s.isAdmin);
+  const isDev = useAuth((s: AuthState) => s.role === 'dev');
   const collapsed = useSettings((s) => s.sidebarCollapsed);
   const setSidebarCollapsed = useSettings((s) => s.setSidebarCollapsed);
   const {
@@ -67,6 +73,10 @@ export function WebSidebar({ state, descriptors, navigation }: BottomTabBarProps
           // Skip hidden tabs (href: null — Expo Router extension)
           if ((options as any).href === null) return null;
 
+          // Permission-based visibility
+          if (route.name === 'admin' && !isAdmin) return null;
+          if (route.name === 'dev' && !isDev) return null;
+
           const isFocused = state.index === index;
           const label = options.title ?? route.name;
           const color = isFocused ? tabActiveTint : tabInactiveTint;
@@ -78,7 +88,8 @@ export function WebSidebar({ state, descriptors, navigation }: BottomTabBarProps
               canPreventDefault: true,
             });
             if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params);
+              const href = (options as any).href || `/${route.name}`;
+              router.navigate(href);
             }
           };
 
