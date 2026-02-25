@@ -30,7 +30,7 @@ export default function RootLayout() {
 
   // Sync theme to native OS appearance so BlurView, GlassView and StatusBar respond
   useEffect(() => {
-    if (settingsHydrated) {
+    if (settingsHydrated && Platform.OS !== 'web') {
       Appearance.setColorScheme(theme);
     }
   }, [theme, settingsHydrated]);
