@@ -283,7 +283,7 @@ export default function AdminCommunicationsScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-3">
               <Pressable
-                onPress={() => router.back()}
+                onPress={() => router.navigate('/admin')}
                 hitSlop={16}
                 className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 items-center justify-center"
               >

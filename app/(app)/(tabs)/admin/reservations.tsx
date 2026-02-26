@@ -250,7 +250,7 @@ export default function AdminReservationsScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.navigate('/admin')}
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
             hitSlop={12}
             className="flex-row items-center gap-2"
