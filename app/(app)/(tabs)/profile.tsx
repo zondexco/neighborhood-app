@@ -155,7 +155,9 @@ export default function ProfileScreen() {
     };
 
     if (Platform.OS === 'web') {
-      doLogout();
+      if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+        doLogout();
+      }
       return;
     }
 
@@ -181,7 +183,9 @@ export default function ProfileScreen() {
     };
 
     if (Platform.OS === 'web') {
-      doClear();
+      if (window.confirm('Esto cerrará tu sesión y eliminará todos los datos almacenados localmente. ¿Continuar?')) {
+        doClear();
+      }
       return;
     }
 
