@@ -47,7 +47,7 @@ export default function TabLayout() {
               className="flex-1 border-b border-black/5 dark:border-white/10"
             />
           ) : undefined,
-        tabBarPosition: 'bottom',
+        tabBarPosition: hasSidebar ? 'left' : 'bottom',
         tabBarButton: (props) => <HapticTab {...props} />,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {

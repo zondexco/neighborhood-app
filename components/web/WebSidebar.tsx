@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettings } from '@/features/settings/useSettings';
@@ -13,7 +12,6 @@ const COLLAPSED_WIDTH = 68;
 const TRANSITION = 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)';
 
 export function WebSidebar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const router = useRouter();
   const isAdmin = useAuth((s: AuthState) => s.isAdmin);
   const isDev = useAuth((s: AuthState) => s.role === 'dev');
   const collapsed = useSettings((s) => s.sidebarCollapsed);
@@ -88,8 +86,7 @@ export function WebSidebar({ state, descriptors, navigation }: BottomTabBarProps
               canPreventDefault: true,
             });
             if (!isFocused && !event.defaultPrevented) {
-              const href = (options as any).href || `/${route.name}`;
-              router.navigate(href);
+              navigation.navigate(route.name, route.params);
             }
           };
 
