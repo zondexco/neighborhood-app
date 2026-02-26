@@ -164,7 +164,7 @@ export default function CondominioDetailScreen() {
             {/* Header */}
             <View className="flex-row items-center gap-3 mb-6">
               <Pressable
-                onPress={() => router.navigate('/dev')}
+                onPress={() => router.navigate('/dev' as any)}
                 hitSlop={16}
                 className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 items-center justify-center"
               >

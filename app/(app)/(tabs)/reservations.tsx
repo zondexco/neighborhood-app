@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Calendar, Plus, RefreshCw, Eye } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
@@ -61,11 +61,7 @@ export default function ReservationsScreen() {
   const isEmployee = role === 'empleado';
   const canCreate = !isEmployee; // residentes y admins pueden crear
 
-  // Data state
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [spaces, setSpaces] = useState<Space[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Sheet state
   const createSheetRef = useRef<BottomSheet>(null);
@@ -74,44 +70,34 @@ export default function ReservationsScreen() {
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [editingSpace, setEditingSpace] = useState<Space | null>(null);
 
-  // ── Fetch data ──────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Admins y empleados ven todas; residentes ven las de su apartamento (o solo las suyas si no tienen apartamento)
-      const resData =
-        isAdmin || isEmployee
-          ? await fetchAllReservations()
-          : apartmentId
-            ? await fetchApartmentReservations(apartmentId)
-            : userId
-              ? await fetchMyReservations(userId)
-              : await fetchAllReservations();
-      setReservations(resData.data ?? []);
+  // ── Cached data ──────────────────────────────────────────────
+  const { data: resData, isLoading: resLoading, error: resError } = useQuery({
+    queryKey: ['reservations', userId, isAdmin, isEmployee, apartmentId],
+    queryFn: () =>
+      isAdmin || isEmployee
+        ? fetchAllReservations()
+        : apartmentId
+          ? fetchApartmentReservations(apartmentId)
+          : userId
+            ? fetchMyReservations(userId)
+            : fetchAllReservations(),
+  });
 
-      // Admins también cargan espacios para gestión
-      if (isAdmin) {
-        const spacesData = await fetchSpaces();
-        setSpaces(spacesData.data ?? []);
-      }
-    } catch {
-      setError('No se pudieron cargar las reservas. Verifica tu conexión.');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, isAdmin, isEmployee, apartmentId]);
+  const { data: spacesData } = useQuery({
+    queryKey: ['spaces'],
+    queryFn: () => fetchSpaces(),
+    enabled: isAdmin,
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-      return () => {
-        createSheetRef.current?.close();
-        detailSheetRef.current?.close();
-        spaceFormSheetRef.current?.close();
-      };
-    }, [fetchData]),
-  );
+  const reservations = resData?.data ?? [];
+  const spaces = spacesData?.data ?? [];
+  const loading = resLoading;
+  const error = resError ? 'No se pudieron cargar las reservas. Verifica tu conexión.' : null;
+
+  const invalidateReservations = () => {
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['spaces'] });
+  };
 
   // ── Handlers ────────────────────────────────────────────────
   const openCreateSheet = () => createSheetRef.current?.snapToIndex(0);
@@ -198,7 +184,7 @@ export default function ReservationsScreen() {
               >
                 <Text className="text-red-600 dark:text-red-400 text-base text-center">{error}</Text>
                 <Pressable
-                  onPress={fetchData}
+                  onPress={invalidateReservations}
                   className="flex-row items-center gap-2 bg-black/10 dark:bg-white/10 px-4 py-2 rounded-full"
                 >
                   <RefreshCw color={iconPrimary} size={16} />
@@ -215,7 +201,7 @@ export default function ReservationsScreen() {
                   <SpacesManagement
                     spaces={spaces}
                     loading={false}
-                    onRefresh={fetchData}
+                    onRefresh={invalidateReservations}
                     onCreateSpace={() => openSpaceForm()}
                     onEditSpace={(space) => openSpaceForm(space)}
                   />
@@ -304,18 +290,18 @@ export default function ReservationsScreen() {
       </SafeAreaView>
 
       {/* Bottom Sheets */}
-      <CreateReservationSheet ref={createSheetRef} onCreated={fetchData} />
+      <CreateReservationSheet ref={createSheetRef} onCreated={invalidateReservations} />
 
       <ReservationDetailSheet
         ref={detailSheetRef}
         reservation={selectedReservation}
         role={role}
         isAdmin={isAdmin}
-        onUpdated={fetchData}
+        onUpdated={invalidateReservations}
       />
 
       {isAdmin && (
-        <SpaceFormSheet ref={spaceFormSheetRef} space={editingSpace} onSaved={fetchData} />
+        <SpaceFormSheet ref={spaceFormSheetRef} space={editingSpace} onSaved={invalidateReservations} />
       )}
     </View>
   );

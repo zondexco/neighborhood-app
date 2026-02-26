@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ArrowLeft, Plus, Search, Users, Building2 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
@@ -54,35 +55,22 @@ export default function UsersScreen() {
   const callerRole = useAuth((s: AuthState) => s.role);
   const callerUserId = useAuth((s: AuthState) => s.userId);
 
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-
   const formSheetRef = useRef<BottomSheet>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchAdminUsers();
-      setUsers(res.data ?? []);
-    } catch {
-      setError('No se pudieron cargar los usuarios.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: usersData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: fetchAdminUsers,
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-      return () => {
-        formSheetRef.current?.close();
-      };
-    }, [fetchData]),
-  );
+  const users = usersData?.data ?? [];
+  const error = queryError ? 'No se pudieron cargar los usuarios.' : null;
+
+  const invalidateUsers = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -111,7 +99,7 @@ export default function UsersScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
           <Pressable
-            onPress={() => router.navigate('/admin')}
+            onPress={() => router.navigate('/admin' as any)}
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
             hitSlop={12}
             className="flex-row items-center gap-2"
@@ -253,7 +241,7 @@ export default function UsersScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      <UserFormSheet ref={formSheetRef} user={editingUser} callerRole={callerRole} callerUserId={callerUserId} onSaved={fetchData} />
+      <UserFormSheet ref={formSheetRef} user={editingUser} callerRole={callerRole} callerUserId={callerUserId} onSaved={invalidateUsers} />
     </View>
   );
 }

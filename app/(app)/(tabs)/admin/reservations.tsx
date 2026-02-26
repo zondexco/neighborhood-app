@@ -9,7 +9,8 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   ArrowLeft,
@@ -66,9 +67,7 @@ function formatTime(iso: string) {
 export default function AdminReservationsScreen() {
   const { isDark, iconPrimary, iconMuted, activityColor, placeholderText, bgCard, sheetHandle } = useThemeColors();
 
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('todas');
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
@@ -77,27 +76,17 @@ export default function AdminReservationsScreen() {
   const detailSheetRef = useRef<BottomSheet>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchAllReservations(1, 500);
-      setReservations(res.data ?? []);
-    } catch {
-      setError('No se pudieron cargar las reservas.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: resData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['admin', 'reservations'],
+    queryFn: () => fetchAllReservations(1, 500),
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-      return () => {
-        detailSheetRef.current?.close();
-      };
-    }, [fetchData]),
-  );
+  const reservations = resData?.data ?? [];
+  const error = queryError ? 'No se pudieron cargar las reservas.' : null;
+
+  const invalidateReservations = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] });
+  };
 
   const filtered = useMemo(() => {
     let list = reservations;
@@ -170,7 +159,7 @@ export default function AdminReservationsScreen() {
                 });
               }
               detailSheetRef.current?.close();
-              fetchData();
+              invalidateReservations();
             } catch {
               Alert.alert('Error', 'No se pudo realizar la acción');
             } finally {
@@ -180,7 +169,7 @@ export default function AdminReservationsScreen() {
         },
       ]);
     },
-    [selectedReservation, fetchData],
+    [selectedReservation, invalidateReservations],
   );
 
   const renderBackdrop = useCallback(
@@ -250,7 +239,7 @@ export default function AdminReservationsScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
           <Pressable
-            onPress={() => router.navigate('/admin')}
+            onPress={() => router.navigate('/admin' as any)}
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
             hitSlop={12}
             className="flex-row items-center gap-2"
