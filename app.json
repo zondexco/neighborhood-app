@@ -2,7 +2,7 @@
   "expo": {
     "name": "neighborhood-app",
     "slug": "neighborhood-app",
-    "version": "1.2.3",
+    "version": "1.3.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "neighborhoodapp",
