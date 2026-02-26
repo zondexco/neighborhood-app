@@ -150,8 +150,9 @@ export default function ProfileScreen() {
   // ── Actions ──────────────────────────────────────────────────
   const handleLogout = useCallback(() => {
     const doLogout = () => {
-      logout();
+      // Navigate first, then clear state so the UI doesn't flash blank
       router.replace('/');
+      setTimeout(logout, 100);
     };
 
     if (Platform.OS === 'web') {
@@ -173,13 +174,16 @@ export default function ProfileScreen() {
 
   const handleClearCache = useCallback(() => {
     const doClear = async () => {
-      try {
-        await appStorage.removeItem('neighborhood-auth');
-      } catch {
-        // Ignore storage errors during cleanup
-      }
-      logout();
+      // Navigate first, then clear state so the UI doesn't flash blank
       router.replace('/');
+      setTimeout(async () => {
+        try {
+          await appStorage.removeItem('neighborhood-auth');
+        } catch {
+          // Ignore storage errors during cleanup
+        }
+        logout();
+      }, 100);
     };
 
     if (Platform.OS === 'web') {
