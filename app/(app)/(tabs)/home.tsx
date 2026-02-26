@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { LiquidView } from '@/components/native/LiquidView';
 import { Bell, Package, Calendar, Megaphone, ChevronRight, RefreshCw, HelpCircle, Building2, Users } from 'lucide-react-native';
@@ -98,20 +99,14 @@ export default function HomeScreen() {
     ? `${nombre}${apellido ? ' ' + apellido : ''}`
     : email?.split('@')[0] ?? 'Usuario';
 
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [apartmentInfo, setApartmentInfo] = useState<ApartmentInfo | null>(null);
-  const [apartmentMembers, setApartmentMembers] = useState<ApartmentMember[]>([]);
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const infoSheetRef = useRef<BottomSheet>(null);
   const detailSheetRef = useRef<BottomSheet>(null);
+  const queryClient = useQueryClient();
 
-  const fetchSummary = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const { data: homeData, isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: ['home', 'dashboard', isResidente, apartmentId],
+    queryFn: async () => {
       const promises: Promise<any>[] = [
         api.get<DashboardSummary>('/dashboard/summary'),
         fetchUnreadCount().catch(() => 0),
@@ -125,43 +120,48 @@ export default function HomeScreen() {
       }
 
       const results = await Promise.all(promises);
-      setSummary(results[0].data);
-      setUnreadCount(results[1]);
 
+      let apartmentInfo: ApartmentInfo | null = null;
       if (isResidente && apartmentId && results[2]) {
         const apt = results[2].data;
         const parts: string[] = [];
         if (apt.torre) parts.push(`Torre ${apt.torre}`);
         if (apt.piso) parts.push(`Piso ${apt.piso}`);
         if (apt.numero) parts.push(`Apt ${apt.numero}`);
-        setApartmentInfo({
+        apartmentInfo = {
           id: apt.id,
           numero: apt.numero,
           torre: apt.torre ?? '',
           bloque: apt.bloque ?? '',
           piso: apt.piso ?? 0,
           label: parts.join(' • ') || `Apt ${apt.numero}`,
-        });
+        };
       }
 
-      if (isResidente && apartmentId && results[3]) {
-        setApartmentMembers(results[3].data?.data ?? []);
-      }
-    } catch {
-      setError('No se pudo cargar la información. Verifica tu conexión.');
-    } finally {
-      setLoading(false);
-    }
-  }, [isResidente, apartmentId]);
+      return {
+        summary: results[0].data as DashboardSummary,
+        unreadCount: results[1] as number,
+        apartmentInfo,
+        apartmentMembers: (isResidente && apartmentId && results[3])
+          ? (results[3].data?.data ?? []) as ApartmentMember[]
+          : [] as ApartmentMember[],
+      };
+    },
+  });
+
+  const summary = homeData?.summary ?? null;
+  const unreadCount = homeData?.unreadCount ?? 0;
+  const apartmentInfo = homeData?.apartmentInfo ?? null;
+  const apartmentMembers = homeData?.apartmentMembers ?? [];
+  const error = queryError ? 'No se pudo cargar la información. Verifica tu conexión.' : null;
 
   useFocusEffect(
     useCallback(() => {
-      fetchSummary();
       return () => {
         infoSheetRef.current?.close();
         detailSheetRef.current?.close();
       };
-    }, [fetchSummary])
+    }, [])
   );
 
   const openCommunication = useCallback(async (id: string) => {
@@ -176,8 +176,8 @@ export default function HomeScreen() {
   }, []);
 
   const handleCommRead = useCallback(() => {
-    fetchUnreadCount().then(setUnreadCount).catch(() => {});
-  }, []);
+    queryClient.invalidateQueries({ queryKey: ['home', 'dashboard'] });
+  }, [queryClient]);
 
   // ── Greeting ──────────────────────────────────────────────
   const hour = new Date().getHours();
@@ -254,7 +254,7 @@ export default function HomeScreen() {
               >
                 <Text className="text-red-600 dark:text-red-400 text-base text-center">{error}</Text>
                 <Pressable
-                  onPress={fetchSummary}
+                  onPress={() => refetch()}
                   className="flex-row items-center gap-2 bg-black/10 dark:bg-white/10 px-4 py-2 rounded-full"
                 >
                   <RefreshCw color={iconPrimary} size={16} />

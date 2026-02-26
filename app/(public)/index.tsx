@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useWindowDimensions, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowRight, Building2, CalendarClock, Package } from 'lucide-react-native';
+import { ArrowRight, CalendarClock, Megaphone, Package } from 'lucide-react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 export default function WelcomeScreen() {
@@ -56,7 +56,10 @@ export default function WelcomeScreen() {
               },
             ]}
           >
-            <Building2 color={iconPrimary} size={isCompact ? 26 : 30} />
+            <Image
+              source={require('@/assets/brand/icons/icon_128.png')}
+              style={{ width: isCompact ? 36 : 42, height: isCompact ? 36 : 42 }}
+            />
           </View>
 
           <Text style={[s.eyebrow, { color: iconMuted }]}>Bienvenido a</Text>
@@ -92,7 +95,7 @@ export default function WelcomeScreen() {
             subColor={iconMuted}
           />
           <FeatureItem
-            icon={<Building2 color={iconPrimary} size={18} />}
+            icon={<Megaphone color={iconPrimary} size={18} />}
             label="Recibe avisos del condominio"
             textColor={isDark ? '#fff' : '#0a0a0a'}
             subColor={iconMuted}

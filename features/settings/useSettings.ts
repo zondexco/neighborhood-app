@@ -16,10 +16,12 @@ export interface SettingsState {
   textSizeIndex: number;
   textScale: number;
   hapticEnabled: boolean;
+  sidebarCollapsed: boolean;
   hasHydrated: boolean;
   setTheme: (theme: ThemeMode) => void;
   setTextSizeIndex: (index: number) => void;
   setHapticEnabled: (value: boolean) => void;
+  setSidebarCollapsed: (value: boolean) => void;
   setHasHydrated: (value: boolean) => void;
 }
 
@@ -30,6 +32,7 @@ export const useSettings = create<SettingsState>()(
       textSizeIndex: 1,
       textScale: 1,
       hapticEnabled: true,
+      sidebarCollapsed: false,
       hasHydrated: false,
       setTheme: (theme) => set({ theme }),
       setTextSizeIndex: (index) => {
@@ -37,6 +40,7 @@ export const useSettings = create<SettingsState>()(
         set({ textSizeIndex: clamped, textScale: TEXT_SIZES[clamped].value });
       },
       setHapticEnabled: (value) => set({ hapticEnabled: value }),
+      setSidebarCollapsed: (value) => set({ sidebarCollapsed: value }),
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
@@ -47,6 +51,7 @@ export const useSettings = create<SettingsState>()(
         textSizeIndex: state.textSizeIndex,
         textScale: state.textScale,
         hapticEnabled: state.hapticEnabled,
+        sidebarCollapsed: state.sidebarCollapsed,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

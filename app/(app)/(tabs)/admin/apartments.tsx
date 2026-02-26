@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ArrowLeft, Plus, Search, Building2 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
@@ -41,35 +42,22 @@ function aptSublabel(apt: AdminApartment): string {
 export default function ApartmentsScreen() {
   const { isDark, iconMuted, activityColor, placeholderText } = useThemeColors();
 
-  const [apartments, setApartments] = useState<AdminApartment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [editingApt, setEditingApt] = useState<AdminApartment | null>(null);
-
   const formSheetRef = useRef<BottomSheet>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchAdminApartments();
-      setApartments(res.data ?? []);
-    } catch {
-      setError('No se pudieron cargar los apartamentos.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: aptsData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['admin', 'apartments'],
+    queryFn: fetchAdminApartments,
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-      return () => {
-        formSheetRef.current?.close();
-      };
-    }, [fetchData]),
-  );
+  const apartments = aptsData?.data ?? [];
+  const error = queryError ? 'No se pudieron cargar los apartamentos.' : null;
+
+  const invalidateApartments = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'apartments'] });
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -98,7 +86,7 @@ export default function ApartmentsScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.navigate('/admin' as any)}
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
             hitSlop={12}
             className="flex-row items-center gap-2"
@@ -210,7 +198,7 @@ export default function ApartmentsScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      <ApartmentFormSheet ref={formSheetRef} apartment={editingApt} onSaved={fetchData} />
+      <ApartmentFormSheet ref={formSheetRef} apartment={editingApt} onSaved={invalidateApartments} />
     </View>
   );
 }

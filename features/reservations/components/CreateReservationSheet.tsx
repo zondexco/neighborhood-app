@@ -33,7 +33,7 @@ const DURATION_OPTIONS = [
 ];
 
 const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, ref) => {
-  const snapPoints = useMemo(() => ['92%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
@@ -185,7 +185,7 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}

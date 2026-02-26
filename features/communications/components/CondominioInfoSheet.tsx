@@ -13,7 +13,7 @@ interface CondominioFull extends Condominio {
 }
 
 const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
-  const snapPoints = useMemo(() => ['60%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
   const { isDark, bgCard, sheetHandle, activityColor, iconMuted } = useThemeColors();
 
   const [condominio, setCondominio] = useState<CondominioFull | null>(null);
@@ -64,7 +64,7 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}

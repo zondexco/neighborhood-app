@@ -24,7 +24,7 @@ interface Props {
 
 const PackageFormSheet = forwardRef<BottomSheet, Props>(
   ({ pkg, isAdmin, role, onSaved }, ref) => {
-    const snapPoints = useMemo(() => ['85%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const { iconPrimary, activityColor, bgCard, sheetHandle, isDark } = useThemeColors();
 
     const isEditing = pkg !== null;
@@ -156,7 +156,7 @@ const PackageFormSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}

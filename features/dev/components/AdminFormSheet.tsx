@@ -30,7 +30,7 @@ const ESTADO_OPTIONS = [
 
 const AdminFormSheet = forwardRef<BottomSheet, Props>(
   ({ condominioId, admin, onSaved }, ref) => {
-    const snapPoints = useMemo(() => ['75%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const isEditing = admin !== null;
     const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } =
       useThemeColors();
@@ -164,7 +164,7 @@ const AdminFormSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}

@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {
   ArrowLeft,
@@ -133,34 +134,23 @@ function FilterChip({
 export default function AdminCommunicationsScreen() {
   const { isDark, iconPrimary, iconMuted, activityColor, placeholderText } = useThemeColors();
 
-  const [communications, setCommunications] = useState<Communication[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [iconFilter, setIconFilter] = useState<IconFilterKey>('all');
   const [dateFilter, setDateFilter] = useState<DateFilterKey>('all');
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const formRef = useRef<BottomSheet>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetchAdminCommunications(1, 200);
-      setCommunications(res.data ?? []);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: commsData, isLoading: loading } = useQuery({
+    queryKey: ['admin', 'communications'],
+    queryFn: () => fetchAdminCommunications(1, 200),
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      load();
-      return () => {
-        formRef.current?.close();
-      };
-    }, [load]),
-  );
+  const communications = commsData?.data ?? [];
+
+  const invalidateComms = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'communications'] });
+  };
 
   const filtered = useMemo(() => {
     return communications.filter((c) => {
@@ -283,7 +273,7 @@ export default function AdminCommunicationsScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-3">
               <Pressable
-                onPress={() => router.back()}
+                onPress={() => router.navigate('/admin' as any)}
                 hitSlop={16}
                 className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 items-center justify-center"
               >
@@ -376,7 +366,7 @@ export default function AdminCommunicationsScreen() {
       <CommunicationFormSheet
         ref={formRef}
         communication={selectedComm}
-        onSaved={load}
+        onSaved={invalidateComms}
       />
     </View>
   );

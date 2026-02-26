@@ -22,7 +22,7 @@ interface Props {
 }
 
 const CondominioFormSheet = forwardRef<BottomSheet, Props>(({ condominio, onSaved }, ref) => {
-  const snapPoints = useMemo(() => ['85%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
   const isEditing = condominio !== null;
   const { isDark, iconPrimary, activityColor, bgCard, sheetHandle, placeholderText } =
     useThemeColors();
@@ -162,7 +162,7 @@ const CondominioFormSheet = forwardRef<BottomSheet, Props>(({ condominio, onSave
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}

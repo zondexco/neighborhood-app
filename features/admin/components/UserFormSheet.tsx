@@ -224,7 +224,7 @@ const UserFormSheet = forwardRef<BottomSheet, Props>(({ user, callerRole, caller
       ref={ref}
       index={-1}
       snapPoints={snapPoints}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: bgCard }}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Package, Plus, Search, RefreshCw, CheckCircle2, Clock } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
@@ -74,10 +74,7 @@ export default function PackagesScreen() {
   const isResidente = role === 'residente';
   const isEmpleadoOrAdmin = isAdmin || role === 'empleado';
 
-  const [packages, setPackages] = useState<Pkg[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const [filters, setFilters] = useState<PackageFilters>({
     status: 'all',
@@ -93,53 +90,55 @@ export default function PackagesScreen() {
   const detailSheetRef = useRef<BottomSheet>(null);
   const formSheetRef = useRef<BottomSheet>(null);
 
-  // Derived filter options from loaded data
+  // Single fetch — all packages cached, filtered client-side
+  const { data: allData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['packages', 'all'],
+    queryFn: () => fetchPackages({ status: 'all', page: 1, page_size: 1000 }),
+  });
+
+  const allPackages = useMemo(() => allData?.data ?? [], [allData]);
+  const error = queryError ? 'No se pudo cargar la información. Verifica tu conexión.' : null;
+
+  // Client-side filtering — zero API calls on filter change
+  const packages = useMemo(() => {
+    return allPackages.filter((pkg) => {
+      if (filters.status === 'pending' && pkg.delivered_at !== null) return false;
+      if (filters.status === 'delivered' && pkg.delivered_at === null) return false;
+      if (filters.apartmentId && pkg.apartment_id !== filters.apartmentId) return false;
+      if (filters.carrier && pkg.carrier !== filters.carrier) return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        if (!pkg.resident.toLowerCase().includes(q) && !pkg.carrier.toLowerCase().includes(q)) return false;
+      }
+      if (filters.dateFilter !== 'all') {
+        const pkgDate = new Date(pkg.received_at).getTime();
+        const now = Date.now();
+        if (filters.dateFilter === 'today') {
+          const start = new Date(); start.setHours(0, 0, 0, 0);
+          if (pkgDate < start.getTime()) return false;
+        } else {
+          const days = filters.dateFilter === '7d' ? 7 : 30;
+          if (now - pkgDate > days * 86_400_000) return false;
+        }
+      }
+      return true;
+    });
+  }, [allPackages, filters]);
+
+  const total = packages.length;
+
+  // Derived filter chip options (from ALL packages, not filtered)
   const carriers = useMemo(
-    () => [...new Set(packages.map((p) => p.carrier))].sort(),
-    [packages],
+    () => [...new Set(allPackages.map((p) => p.carrier))].sort(),
+    [allPackages],
   );
 
   const apartments = useMemo(() => {
     const seen = new Set<string>();
-    return packages
+    return allPackages
       .filter((p) => !seen.has(p.apartment_id) && seen.add(p.apartment_id))
       .map((p) => ({ id: p.apartment_id, label: p.apartment }));
-  }, [packages]);
-
-  const load = useCallback(
-    async (f: PackageFilters) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchPackages({
-          status: f.status,
-          dateFilter: f.dateFilter,
-          apartmentId: f.apartmentId,
-          carrier: f.carrier,
-          search: f.search,
-          page: 1,
-          page_size: 100,
-        });
-        setPackages(res.data ?? []);
-        setTotal(res.total ?? 0);
-      } catch {
-        setError('No se pudo cargar la información. Verifica tu conexión.');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      load(filters);
-      return () => {
-        detailSheetRef.current?.close();
-        formSheetRef.current?.close();
-      };
-    }, [load, filters]),
-  );
+  }, [allPackages]);
 
   const openDetail = (pkg: Pkg) => {
     setSelectedPackage(pkg);
@@ -156,12 +155,12 @@ export default function PackagesScreen() {
     formSheetRef.current?.snapToIndex(0);
   };
 
-  const refreshAll = () => load(filters);
+  const refreshAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['packages'] });
+  };
 
   const setFilter = <K extends keyof PackageFilters>(key: K, value: PackageFilters[K]) => {
-    const next = { ...filters, [key]: value };
-    setFilters(next);
-    load(next);
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const toggleStatus = (status: PackageFilters['status']) =>

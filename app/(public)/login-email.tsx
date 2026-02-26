@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -36,8 +36,15 @@ export default function LoginEmailScreen() {
   const inputHeight = isCompact ? 60 : 68;
   const ctaHeight = isCompact ? 58 : 64;
 
+  const scrollRef = useRef<ScrollView>(null);
   const emailTrim = email.trim().toLowerCase();
   const isValidEmail = EMAIL_REGEX.test(emailTrim);
+
+  const scrollToInput = useCallback(() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 300);
+  }, []);
 
   const handleEmailChange = (text: string) => {
     setEmail(text.replace(/\s/g, ''));
@@ -74,6 +81,7 @@ export default function LoginEmailScreen() {
 
   const MainContent = (
     <ScrollView
+      ref={scrollRef}
       style={s.scroll}
       contentContainerStyle={[
         s.scrollContent,
@@ -84,6 +92,7 @@ export default function LoginEmailScreen() {
         },
       ]}
       keyboardShouldPersistTaps="always"
+      keyboardDismissMode="interactive"
     >
       {/* Back Button */}
       <Pressable
@@ -131,6 +140,7 @@ export default function LoginEmailScreen() {
             value={email}
             onChangeText={handleEmailChange}
             onSubmitEditing={handleNext}
+            onFocus={scrollToInput}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -181,13 +191,13 @@ export default function LoginEmailScreen() {
     <View style={[s.container, { backgroundColor: bgSecondary }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView behavior="padding" style={s.flex1}>
-          {MainContent}
-        </KeyboardAvoidingView>
-      ) : (
-        MainContent
-      )}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={s.flex1}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        {MainContent}
+      </KeyboardAvoidingView>
     </View>
   );
 }

@@ -42,7 +42,7 @@ function getInitials(nombre: string, apellido: string): string {
 
 const CommunicationDetailSheet = forwardRef<BottomSheet, Props>(
   ({ communication, onRead }, ref) => {
-    const snapPoints = useMemo(() => ['85%'], []);
+    const snapPoints = useMemo(() => ['90%'], []);
     const { isDark, bgCard, sheetHandle, iconPrimary, iconMuted, placeholderText, activityColor } =
       useThemeColors();
     const { bottom: safeBottom } = useSafeAreaInsets();
@@ -104,7 +104,7 @@ const CommunicationDetailSheet = forwardRef<BottomSheet, Props>(
         ref={ref}
         index={-1}
         snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: bgCard }}
