@@ -22,7 +22,7 @@ const resolveApiBaseURL = () => {
     return normalizeBaseURL(prodURL);
   }
 
-  return 'https://napi.enux.dev/api/v1';
+  return 'https://napi.cris.ac/api/v1';
 };
 
 const BASE_URL = resolveApiBaseURL();
