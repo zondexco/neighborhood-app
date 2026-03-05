@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   Pressable,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
@@ -158,8 +159,10 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       return () => {
-        infoSheetRef.current?.close();
-        detailSheetRef.current?.close();
+        if (Platform.OS !== 'web') {
+          infoSheetRef.current?.close();
+          detailSheetRef.current?.close();
+        }
       };
     }, [])
   );

@@ -5,6 +5,7 @@ import {
   SectionList,
   Pressable,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router, Stack } from 'expo-router';
@@ -25,7 +26,7 @@ import {
 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { fetchCommunications, markCommunicationRead } from '@/features/communications/api';
+import { fetchCommunications } from '@/features/communications/api';
 import {
   fetchNotifications,
   markNotificationRead,
@@ -88,6 +89,20 @@ export default function NotificationsScreen() {
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const detailRef = useRef<BottomSheet>(null);
 
+  const handleBack = useCallback(() => {
+    if (Platform.OS === 'web') {
+      router.replace('/home' as any);
+      return;
+    }
+
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/home' as any);
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -108,7 +123,9 @@ export default function NotificationsScreen() {
     useCallback(() => {
       load();
       return () => {
-        detailRef.current?.close();
+        if (Platform.OS !== 'web') {
+          detailRef.current?.close();
+        }
       };
     }, [load]),
   );
@@ -295,7 +312,7 @@ export default function NotificationsScreen() {
           {/* Header */}
           <View className="px-5 pt-4 pb-3 flex-row items-center justify-between">
             <View className="flex-row items-center gap-3">
-              <Pressable onPress={() => router.back()} hitSlop={12}>
+              <Pressable onPress={handleBack} hitSlop={12}>
                 <ArrowLeft color={iconPrimary} size={22} />
               </Pressable>
               <Text className="text-neutral-950 dark:text-white text-xl font-bold">
