@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   Pressable,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
@@ -158,8 +159,10 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       return () => {
-        infoSheetRef.current?.close();
-        detailSheetRef.current?.close();
+        if (Platform.OS !== 'web') {
+          infoSheetRef.current?.close();
+          detailSheetRef.current?.close();
+        }
       };
     }, [])
   );
@@ -178,6 +181,14 @@ export default function HomeScreen() {
   const handleCommRead = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['home', 'dashboard'] });
   }, [queryClient]);
+
+  const openPackages = useCallback(() => {
+    router.push('/packages' as any);
+  }, []);
+
+  const openReservations = useCallback(() => {
+    router.push('/reservations' as any);
+  }, []);
 
   // ── Greeting ──────────────────────────────────────────────
   const hour = new Date().getHours();
@@ -322,31 +333,41 @@ export default function HomeScreen() {
                   </View>
 
                   {summary.packages_pending === 0 ? (
-                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
-                      <Package color="#4ade80" size={28} />
-                      <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin paquetes pendientes</Text>
-                    </LiquidView>
+                    <Pressable
+                      onPress={openPackages}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+                    >
+                      <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
+                        <Package color="#4ade80" size={28} />
+                        <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin paquetes pendientes</Text>
+                      </LiquidView>
+                    </Pressable>
                   ) : (
                     <View className={`gap-3 ${isTablet ? 'flex-row flex-wrap' : 'flex-col'}`}>
                       {summary.pending_packages.map((pkg) => (
-                        <LiquidView
+                        <Pressable
                           key={pkg.id}
-                          intensity={15}
-                          tint="dark"
-                          className="flex-1 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
-                          style={isTablet ? { minWidth: '45%' } : undefined}
+                          onPress={openPackages}
+                          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                         >
-                          <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">
-                            <Package color="#fb923c" size={20} />
-                          </View>
-                          <View className="flex-1">
-                            <Text className="text-neutral-950 dark:text-white font-semibold">{pkg.carrier}</Text>
-                            <Text className="text-neutral-500 text-xs">
-                              Recibido {formatDate(pkg.received_at)}
-                            </Text>
-                          </View>
-                          <ChevronRight color={iconSubtle} size={16} />
-                        </LiquidView>
+                          <LiquidView
+                            intensity={15}
+                            tint="dark"
+                            className="flex-1 p-4 rounded-2xl border border-black/5 dark:border-white/10 flex-row items-center gap-3"
+                            style={isTablet ? { minWidth: '45%' } : undefined}
+                          >
+                            <View className="w-10 h-10 rounded-full bg-orange-500/20 items-center justify-center">
+                              <Package color="#fb923c" size={20} />
+                            </View>
+                            <View className="flex-1">
+                              <Text className="text-neutral-950 dark:text-white font-semibold">{pkg.carrier}</Text>
+                              <Text className="text-neutral-500 text-xs">
+                                Recibido {formatDate(pkg.received_at)}
+                              </Text>
+                            </View>
+                            <ChevronRight color={iconSubtle} size={16} />
+                          </LiquidView>
+                        </Pressable>
                       ))}
                     </View>
                   )}
@@ -356,30 +377,40 @@ export default function HomeScreen() {
                 <View>
                   <Text className="text-neutral-950 dark:text-white text-lg font-bold mb-3">Próxima Reserva</Text>
                   {!summary.next_reservation ? (
-                    <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
-                      <Calendar color="#60a5fa" size={28} />
-                      <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin reservas próximas</Text>
-                    </LiquidView>
+                    <Pressable
+                      onPress={openReservations}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+                    >
+                      <LiquidView intensity={15} tint="dark" className="p-5 rounded-2xl border border-black/5 dark:border-white/10 items-center gap-2">
+                        <Calendar color="#60a5fa" size={28} />
+                        <Text className="text-neutral-600 dark:text-neutral-400 text-sm text-center">Sin reservas próximas</Text>
+                      </LiquidView>
+                    </Pressable>
                   ) : (
-                    <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
-                      <View className="flex-row items-center gap-3">
-                        <View className="w-10 h-10 rounded-full bg-blue-500/20 items-center justify-center">
-                          <Calendar color="#60a5fa" size={20} />
-                        </View>
-                        <View className="flex-1">
-                          <Text className="text-neutral-950 dark:text-white font-semibold">Reserva de espacio</Text>
-                          <Text className="text-neutral-600 dark:text-neutral-400 text-sm">
-                            {formatDateTime(summary.next_reservation.fecha_inicio)}
-                          </Text>
-                          <View className="mt-1">
-                            <Text className="text-blue-600 dark:text-blue-400 text-xs font-medium capitalize">
-                              {summary.next_reservation.estado}
-                            </Text>
+                    <Pressable
+                      onPress={openReservations}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+                    >
+                      <LiquidView intensity={15} tint="dark" className="p-4 rounded-2xl border border-black/5 dark:border-white/10">
+                        <View className="flex-row items-center gap-3">
+                          <View className="w-10 h-10 rounded-full bg-blue-500/20 items-center justify-center">
+                            <Calendar color="#60a5fa" size={20} />
                           </View>
+                          <View className="flex-1">
+                            <Text className="text-neutral-950 dark:text-white font-semibold">Reserva de espacio</Text>
+                            <Text className="text-neutral-600 dark:text-neutral-400 text-sm">
+                              {formatDateTime(summary.next_reservation.fecha_inicio)}
+                            </Text>
+                            <View className="mt-1">
+                              <Text className="text-blue-600 dark:text-blue-400 text-xs font-medium capitalize">
+                                {summary.next_reservation.estado}
+                              </Text>
+                            </View>
+                          </View>
+                          <ChevronRight color={iconSubtle} size={16} />
                         </View>
-                        <ChevronRight color={iconSubtle} size={16} />
-                      </View>
-                    </LiquidView>
+                      </LiquidView>
+                    </Pressable>
                   )}
                 </View>
 

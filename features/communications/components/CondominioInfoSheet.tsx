@@ -1,10 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Building2, MapPin, Phone, Mail, FileText, User } from 'lucide-react-native';
+import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { fetchCondominioPublic } from '../api';
 import type { Condominio } from '@/features/admin/types';
+
+const USER_MANUAL_URL = 'https://drive.google.com/file/d/17Z84Yl34aGIa4IXnNTpAHq3yeXfddVSK/view';
 
 interface CondominioFull extends Condominio {
   nit?: string;
@@ -14,7 +17,7 @@ interface CondominioFull extends Condominio {
 
 const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
   const snapPoints = useMemo(() => ['90%'], []);
-  const { isDark, bgCard, sheetHandle, activityColor, iconMuted } = useThemeColors();
+  const { bgCard, sheetHandle, activityColor, iconMuted } = useThemeColors();
 
   const [condominio, setCondominio] = useState<CondominioFull | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,12 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
     (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
     [],
   );
+
+  const openManual = useCallback(async () => {
+    await openBrowserAsync(USER_MANUAL_URL, {
+      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+    });
+  }, []);
 
   const rows = condominio
     ? [
@@ -105,6 +114,22 @@ const CondominioInfoSheet = forwardRef<BottomSheet>((_, ref) => {
                 </View>
               );
             })}
+
+            <View className="mt-2 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4">
+              <Text className="text-neutral-950 dark:text-white text-base font-semibold mb-1">
+                Manual de usuario
+              </Text>
+              <Text className="text-neutral-500 dark:text-neutral-400 text-sm mb-4 leading-5">
+                Abre el PDF oficial para revisarlo o descargarlo desde tu navegador.
+              </Text>
+              <Pressable
+                onPress={openManual}
+                className="h-11 rounded-xl bg-blue-600 items-center justify-center flex-row gap-2"
+              >
+                <FileText color="#ffffff" size={18} />
+                <Text className="text-white font-semibold text-[15px]">Abrir manual de usuario</Text>
+              </Pressable>
+            </View>
           </View>
         )}
       </BottomSheetScrollView>
