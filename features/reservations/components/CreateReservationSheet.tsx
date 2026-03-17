@@ -59,9 +59,9 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
   const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Picker visibility (Android only)
-  const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
-  const [showStartPicker, setShowStartPicker] = useState(Platform.OS === 'ios');
+  // Picker visibility: always visible on iOS/web, toggled on Android
+  const [showDatePicker, setShowDatePicker] = useState(Platform.OS !== 'android');
+  const [showStartPicker, setShowStartPicker] = useState(Platform.OS !== 'android');
 
   const loadSpaces = useCallback(async () => {
     setLoadingSpaces(true);
@@ -104,6 +104,8 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     setDurationHours(2);
     setPeople('');
     setError(null);
+    setShowDatePicker(Platform.OS !== 'android');
+    setShowStartPicker(Platform.OS !== 'android');
   }, []);
 
   const handleSheetChange = useCallback((index: number) => {
