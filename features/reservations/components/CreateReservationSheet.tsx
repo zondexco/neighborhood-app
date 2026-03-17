@@ -143,10 +143,11 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     setError(null);
     try {
       await createReservation(payload);
+      try { (ref as React.RefObject<BottomSheet>)?.current?.close(); } catch { /* ignore sheet close errors on web */ }
       onCreated();
-      (ref as React.RefObject<BottomSheet>)?.current?.close();
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'No se pudo crear la reserva');
+      const rawMsg = e?.response?.data?.message;
+      setError(typeof rawMsg === 'string' ? rawMsg : 'No se pudo crear la reserva');
     } finally {
       setSubmitting(false);
     }
