@@ -450,15 +450,26 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               <Users color="#60a5fa" size={18} />
               <Text className="text-neutral-950 dark:text-white font-semibold">Personas esperadas</Text>
             </View>
-            <BottomSheetTextInput
-              value={people}
-              onChangeText={setPeople}
-              placeholder="Ej: 10"
-              placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
-              keyboardType="number-pad"
-              style={{ color: isDark ? '#ffffff' : '#0a0a0a' }}
-              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-4 text-lg"
-            />
+            {Platform.OS === 'web' ? (
+              <TextInput
+                value={people}
+                onChangeText={setPeople}
+                placeholder="Ej: 10"
+                placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
+                keyboardType="number-pad"
+                style={{ color: isDark ? '#ffffff' : '#0a0a0a', backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, fontSize: 18 }}
+              />
+            ) : (
+              <BottomSheetTextInput
+                value={people}
+                onChangeText={setPeople}
+                placeholder="Ej: 10"
+                placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
+                keyboardType="number-pad"
+                style={{ color: isDark ? '#ffffff' : '#0a0a0a' }}
+                className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-4 text-lg"
+              />
+            )}
             <Pressable
               onPress={() => {
                 const num = parseInt(people, 10);
