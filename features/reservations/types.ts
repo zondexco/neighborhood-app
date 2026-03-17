@@ -14,8 +14,10 @@ export interface Reservation {
   espacio_id: string;
   espacio_nombre?: string;
   usuario_id: string;
+  usuario_nombre?: string;
   valor_base?: number | null;
   costo_total?: number | null;
+  fecha_solicitud?: string;
   fecha_inicio: string;
   fecha_fin: string;
   personas_esperadas: number;

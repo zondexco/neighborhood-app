@@ -72,15 +72,13 @@ export default function ReservationsScreen() {
 
   // ── Cached data ──────────────────────────────────────────────
   const { data: resData, isLoading: resLoading, error: resError } = useQuery({
-    queryKey: ['reservations', userId, isAdmin, isEmployee, apartmentId],
+    queryKey: ['reservations', userId, isAdmin, isEmployee],
     queryFn: () =>
       isAdmin || isEmployee
         ? fetchAllReservations()
-        : apartmentId
-          ? fetchApartmentReservations(apartmentId)
-          : userId
-            ? fetchMyReservations(userId)
-            : fetchAllReservations(),
+        : userId
+          ? fetchMyReservations(userId)
+          : fetchAllReservations(),
   });
 
   const { data: spacesData } = useQuery({
