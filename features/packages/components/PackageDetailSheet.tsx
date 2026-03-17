@@ -12,18 +12,21 @@ interface Props {
   role: string | null;
   isAdmin: boolean;
   onUpdated: () => void;
+  onDelivered: (pkg: Pkg) => void;
   onEdit: (pkg: Pkg) => void;
 }
 
 const PackageDetailSheet = forwardRef<BottomSheet, Props>(
-  ({ pkg, role, isAdmin, onUpdated, onEdit }, ref) => {
+  ({ pkg, role, isAdmin, onUpdated, onDelivered, onEdit }, ref) => {
     const snapPoints = useMemo(() => ['90%'], []);
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
+    const [confirmingDeliver, setConfirmingDeliver] = useState(false);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
     const handleSheetChange = useCallback((index: number) => {
       setSheetOpen(index >= 0);
+      if (index < 0) setConfirmingDeliver(false);
     }, []);
 
     const isEmpleadoOrAdmin = isAdmin || role === 'empleado';
@@ -41,27 +44,21 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
       [],
     );
 
-    const handleDeliver = useCallback(() => {
+    const handleConfirmDeliver = useCallback(async () => {
       if (!pkg) return;
-      Alert.alert('Marcar como entregado', '¿Confirmar entrega del paquete?', [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Confirmar',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await markDelivered(pkg.id);
-              close();
-              onUpdated();
-            } catch {
-              Alert.alert('Error', 'No se pudo registrar la entrega');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]);
-    }, [pkg, onUpdated]);
+      setLoading(true);
+      try {
+        const updated = await markDelivered(pkg.id);
+        setConfirmingDeliver(false);
+        (ref as React.RefObject<BottomSheet>)?.current?.close();
+        onDelivered(updated);
+      } catch {
+        setConfirmingDeliver(false);
+        Alert.alert('Error', 'No se pudo registrar la entrega');
+      } finally {
+        setLoading(false);
+      }
+    }, [pkg, onDelivered, ref]);
 
     const handleDelete = useCallback(() => {
       if (!pkg) return;
@@ -206,13 +203,38 @@ const PackageDetailSheet = forwardRef<BottomSheet, Props>(
             <ActivityIndicator color={activityColor} style={{ marginTop: 8 }} />
           ) : (
             <View className="gap-3">
-              {canDeliver && (
+              {canDeliver && !confirmingDeliver && (
                 <Pressable
-                  onPress={handleDeliver}
+                  onPress={() => setConfirmingDeliver(true)}
                   className="bg-green-600 rounded-2xl py-3.5 items-center"
                 >
                   <Text className="text-white font-bold">Marcar como entregado</Text>
                 </Pressable>
+              )}
+              {canDeliver && confirmingDeliver && (
+                <LiquidView
+                  intensity={15}
+                  tint="dark"
+                  className="rounded-2xl border border-green-500/30 p-4 gap-3"
+                >
+                  <Text className="text-neutral-950 dark:text-white font-semibold text-center">
+                    ¿Confirmar entrega del paquete?
+                  </Text>
+                  <View className="flex-row gap-3">
+                    <Pressable
+                      onPress={() => setConfirmingDeliver(false)}
+                      className="flex-1 bg-black/10 dark:bg-white/10 rounded-xl py-3 items-center"
+                    >
+                      <Text className="text-neutral-950 dark:text-white font-semibold">Cancelar</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleConfirmDeliver}
+                      className="flex-1 bg-green-600 rounded-xl py-3 items-center"
+                    >
+                      <Text className="text-white font-bold">Confirmar</Text>
+                    </Pressable>
+                  </View>
+                </LiquidView>
               )}
               {canEdit && (
                 <Pressable

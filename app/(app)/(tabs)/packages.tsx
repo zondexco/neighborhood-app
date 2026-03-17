@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { AuthState } from '@/features/auth/hooks/useAuth';
 import { fetchPackages } from '@/features/packages/api';
-import type { Package as Pkg, PackageFilters } from '@/features/packages/types';
+import type { Package as Pkg, PackageFilters, PackagesResponse } from '@/features/packages/types';
 import PackageDetailSheet from '@/features/packages/components/PackageDetailSheet';
 import PackageFormSheet from '@/features/packages/components/PackageFormSheet';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -155,9 +155,18 @@ export default function PackagesScreen() {
     formSheetRef.current?.snapToIndex(0);
   };
 
-  const refreshAll = () => {
+  const refreshAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['packages'] });
-  };
+  }, [queryClient]);
+
+  const handleDelivered = useCallback((updated: Pkg) => {
+    setSelectedPackage(updated);
+    queryClient.setQueryData<PackagesResponse>(['packages', 'all'], (old) => {
+      if (!old) return old;
+      return { ...old, data: old.data.map((p) => (p.id === updated.id ? updated : p)) };
+    });
+    refreshAll();
+  }, [queryClient, refreshAll]);
 
   const setFilter = <K extends keyof PackageFilters>(key: K, value: PackageFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -399,6 +408,7 @@ export default function PackagesScreen() {
         role={role}
         isAdmin={isAdmin}
         onUpdated={refreshAll}
+        onDelivered={handleDelivered}
         onEdit={openEdit}
       />
 
