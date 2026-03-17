@@ -5,7 +5,6 @@ import {
   Pressable,
   ActivityIndicator,
   TextInput,
-  Alert,
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,11 +18,12 @@ import {
   MapPin,
   Users,
   Search,
-  Filter,
   CheckCircle2,
   XCircle,
   Trash2,
   X,
+  User,
+  FileText,
 } from 'lucide-react-native';
 import { LiquidView } from '@/components/native/LiquidView';
 import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
@@ -72,6 +72,7 @@ export default function AdminReservationsScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('todas');
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'confirm' | 'cancel' | 'delete' | null>(null);
 
   const detailSheetRef = useRef<BottomSheet>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -133,44 +134,26 @@ export default function AdminReservationsScreen() {
     detailSheetRef.current?.snapToIndex(0);
   };
 
-  const handleAction = useCallback(
-    async (action: 'confirm' | 'cancel' | 'delete') => {
-      if (!selectedReservation) return;
-
-      const messages = {
-        confirm: 'Aprobar esta reserva?',
-        cancel: 'Rechazar esta reserva?',
-        delete: 'Eliminar esta reserva? Esta acción no se puede deshacer.',
-      };
-
-      Alert.alert('Confirmar', messages[action], [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Sí',
-          style: action === 'delete' ? 'destructive' : 'default',
-          onPress: async () => {
-            setActionLoading(true);
-            try {
-              if (action === 'delete') {
-                await deleteReservation(selectedReservation.id);
-              } else {
-                await updateReservation(selectedReservation.id, {
-                  estado: action === 'confirm' ? 'confirmada' : 'cancelado',
-                });
-              }
-              detailSheetRef.current?.close();
-              invalidateReservations();
-            } catch {
-              Alert.alert('Error', 'No se pudo realizar la acción');
-            } finally {
-              setActionLoading(false);
-            }
-          },
-        },
-      ]);
-    },
-    [selectedReservation, invalidateReservations],
-  );
+  const handleConfirmAction = useCallback(async () => {
+    if (!selectedReservation || !pendingAction) return;
+    setActionLoading(true);
+    try {
+      if (pendingAction === 'delete') {
+        await deleteReservation(selectedReservation.id);
+      } else {
+        await updateReservation(selectedReservation.id, {
+          estado: pendingAction === 'confirm' ? 'confirmada' : 'cancelado',
+        });
+      }
+      setPendingAction(null);
+      try { detailSheetRef.current?.close(); } catch { /* ignore on web */ }
+      invalidateReservations();
+    } catch {
+      setPendingAction(null);
+    } finally {
+      setActionLoading(false);
+    }
+  }, [selectedReservation, pendingAction, invalidateReservations]);
 
   const renderBackdrop = useCallback(
     (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
@@ -349,7 +332,7 @@ export default function AdminReservationsScreen() {
         backgroundStyle={{ backgroundColor: bgCard }}
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
         style={sheetOpen ? undefined : { zIndex: -1 }}
-        onChange={(i) => setSheetOpen(i >= 0)}
+        onChange={(i) => { setSheetOpen(i >= 0); if (i < 0) setPendingAction(null); }}
         containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
       >
         <BottomSheetScrollView
@@ -393,6 +376,20 @@ export default function AdminReservationsScreen() {
                   </View>
                 </View>
 
+                {detail.usuario_nombre ? (
+                  <View className="flex-row items-center gap-3">
+                    <View className="w-9 h-9 rounded-full bg-orange-500/20 items-center justify-center">
+                      <User color="#fb923c" size={18} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-neutral-500 text-xs">Solicitante</Text>
+                      <Text className="text-neutral-950 dark:text-white font-medium">
+                        {detail.usuario_nombre}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
                 <View className="flex-row items-center gap-3">
                   <View className="w-9 h-9 rounded-full bg-blue-500/20 items-center justify-center">
                     <Calendar color="#60a5fa" size={18} />
@@ -429,6 +426,20 @@ export default function AdminReservationsScreen() {
                   </View>
                 </View>
 
+                {detail.fecha_solicitud ? (
+                  <View className="flex-row items-center gap-3">
+                    <View className="w-9 h-9 rounded-full bg-neutral-500/20 items-center justify-center">
+                      <FileText color="#9ca3af" size={18} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-neutral-500 text-xs">Solicitada el</Text>
+                      <Text className="text-neutral-950 dark:text-white font-medium">
+                        {formatDate(detail.fecha_solicitud)}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
                 {detail.costo_total != null && (
                   <View className="border-t border-black/10 dark:border-white/10 pt-3 flex-row justify-between items-center">
                     <Text className="text-neutral-600 dark:text-neutral-400">Costo</Text>
@@ -442,19 +453,49 @@ export default function AdminReservationsScreen() {
               {/* Actions */}
               {actionLoading ? (
                 <ActivityIndicator color={activityColor} className="mt-4" />
+              ) : pendingAction ? (
+                <LiquidView
+                  intensity={15}
+                  tint="dark"
+                  className="rounded-2xl border border-black/10 dark:border-white/10 p-4 gap-3"
+                >
+                  <Text className="text-neutral-950 dark:text-white font-semibold text-center">
+                    {pendingAction === 'confirm' && '¿Aprobar esta reserva?'}
+                    {pendingAction === 'cancel' && '¿Rechazar esta reserva?'}
+                    {pendingAction === 'delete' && '¿Eliminar esta reserva? Esta acción no se puede deshacer.'}
+                  </Text>
+                  <View className="flex-row gap-3">
+                    <Pressable
+                      onPress={() => setPendingAction(null)}
+                      className="flex-1 bg-black/10 dark:bg-white/10 rounded-xl py-3 items-center"
+                    >
+                      <Text className="text-neutral-950 dark:text-white font-semibold">Cancelar</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleConfirmAction}
+                      className={`flex-1 rounded-xl py-3 items-center ${
+                        pendingAction === 'delete' ? 'bg-red-600' : pendingAction === 'confirm' ? 'bg-green-600' : 'bg-red-500'
+                      }`}
+                    >
+                      <Text className="text-white font-bold">
+                        {pendingAction === 'confirm' ? 'Aprobar' : pendingAction === 'cancel' ? 'Rechazar' : 'Eliminar'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </LiquidView>
               ) : (
                 <View className="gap-3">
                   {detail.estado === 'pendiente' && (
                     <>
                       <Pressable
-                        onPress={() => handleAction('confirm')}
+                        onPress={() => setPendingAction('confirm')}
                         className="bg-green-600 rounded-2xl py-3.5 flex-row items-center justify-center gap-2"
                       >
                         <CheckCircle2 color="white" size={18} />
                         <Text className="text-white font-bold">Aprobar reserva</Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => handleAction('cancel')}
+                        onPress={() => setPendingAction('cancel')}
                         className="bg-black/10 dark:bg-white/10 rounded-2xl py-3.5 flex-row items-center justify-center gap-2 border border-red-500/30"
                       >
                         <XCircle color="#ef4444" size={18} />
@@ -463,7 +504,7 @@ export default function AdminReservationsScreen() {
                     </>
                   )}
                   <Pressable
-                    onPress={() => handleAction('delete')}
+                    onPress={() => setPendingAction('delete')}
                     className="bg-red-600/15 rounded-2xl py-3.5 flex-row items-center justify-center gap-2"
                   >
                     <Trash2 color="#f87171" size={18} />
