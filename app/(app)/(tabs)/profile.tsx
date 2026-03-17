@@ -157,7 +157,8 @@ export default function ProfileScreen() {
 
     if (Platform.OS === 'web') {
       if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-        doLogout();
+        logout();
+        window.location.replace('/');
       }
       return;
     }
@@ -172,7 +173,7 @@ export default function ProfileScreen() {
     );
   }, [logout, router]);
 
-  const handleClearCache = useCallback(() => {
+  const handleClearCache = useCallback(async () => {
     const doClear = async () => {
       // Navigate first, then clear state so the UI doesn't flash blank
       router.replace('/');
@@ -188,7 +189,9 @@ export default function ProfileScreen() {
 
     if (Platform.OS === 'web') {
       if (window.confirm('Esto cerrará tu sesión y eliminará todos los datos almacenados localmente. ¿Continuar?')) {
-        doClear();
+        try { await appStorage.removeItem('neighborhood-auth'); } catch { /* ignore */ }
+        logout();
+        window.location.replace('/');
       }
       return;
     }

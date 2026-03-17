@@ -3,6 +3,7 @@ import {
   View,
   Text,
   Pressable,
+  TextInput,
   ActivityIndicator,
   Platform,
 } from 'react-native';
@@ -304,15 +305,26 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                 <Calendar color="#60a5fa" size={18} />
                 <Text className="text-neutral-950 dark:text-white font-semibold">Fecha</Text>
               </View>
-              {Platform.OS === 'android' && !showDatePicker && (
+              {Platform.OS === 'web' ? (
+                <TextInput
+                  value={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`}
+                  onChangeText={(val) => {
+                    const d = new Date(val + 'T00:00:00');
+                    if (!isNaN(d.getTime())) setDate(d);
+                  }}
+                  // @ts-ignore — web-only HTML prop
+                  type="date"
+                  min={new Date().toISOString().split('T')[0]}
+                  style={{ color: isDark ? '#fff' : '#0a0a0a', backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 }}
+                />
+              ) : Platform.OS === 'android' && !showDatePicker ? (
                 <Pressable
                   onPress={() => setShowDatePicker(true)}
                   className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
                 >
                   <Text className="text-neutral-950 dark:text-white text-base">{formatDate2(date)}</Text>
                 </Pressable>
-              )}
-              {showDatePicker && (
+              ) : (
                 <DateTimePicker
                   value={date}
                   mode="date"
@@ -330,15 +342,29 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
                 <Clock color="#4ade80" size={18} />
                 <Text className="text-neutral-950 dark:text-white font-semibold">Hora de inicio</Text>
               </View>
-              {Platform.OS === 'android' && !showStartPicker && (
+              {Platform.OS === 'web' ? (
+                <TextInput
+                  value={`${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}`}
+                  onChangeText={(val) => {
+                    const [h, m] = val.split(':').map(Number);
+                    if (!isNaN(h) && !isNaN(m)) {
+                      const t = new Date(startTime);
+                      t.setHours(h, m, 0, 0);
+                      setStartTime(t);
+                    }
+                  }}
+                  // @ts-ignore — web-only HTML prop
+                  type="time"
+                  style={{ color: isDark ? '#fff' : '#0a0a0a', backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 }}
+                />
+              ) : Platform.OS === 'android' && !showStartPicker ? (
                 <Pressable
                   onPress={() => setShowStartPicker(true)}
                   className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-3"
                 >
                   <Text className="text-neutral-950 dark:text-white text-base">{formatTime(startTime)}</Text>
                 </Pressable>
-              )}
-              {showStartPicker && (
+              ) : (
                 <DateTimePicker
                   value={startTime}
                   mode="time"
