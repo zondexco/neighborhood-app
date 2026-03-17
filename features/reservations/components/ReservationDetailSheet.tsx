@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Calendar, Clock, Users, MapPin, X } from 'lucide-react-native';
@@ -27,10 +27,12 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
     const { bottom: safeBottom } = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
+    const [pendingAction, setPendingAction] = useState<'confirm' | 'cancel' | 'delete' | null>(null);
     const { iconPrimary, activityColor, bgCard, sheetHandle } = useThemeColors();
 
     const handleSheetChange = useCallback((index: number) => {
       setSheetOpen(index >= 0);
+      if (index < 0) setPendingAction(null);
     }, []);
 
     const isResidente = !isAdmin && role !== 'empleado';
@@ -41,44 +43,26 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
 
     const close = () => (ref as React.RefObject<BottomSheet>)?.current?.close();
 
-    const handleAction = useCallback(
-      async (action: 'confirm' | 'cancel' | 'delete') => {
-        if (!reservation) return;
-
-        const messages = {
-          confirm: 'Confirmar esta reserva?',
-          cancel: 'Cancelar esta reserva?',
-          delete: 'Eliminar esta reserva? Esta acción no se puede deshacer.',
-        };
-
-        Alert.alert('Confirmar', messages[action], [
-          { text: 'No', style: 'cancel' },
-          {
-            text: 'Sí',
-            style: action === 'delete' ? 'destructive' : 'default',
-            onPress: async () => {
-              setLoading(true);
-              try {
-                if (action === 'delete') {
-                  await deleteReservation(reservation.id);
-                } else {
-                  await updateReservation(reservation.id, {
-                    estado: action === 'confirm' ? 'confirmada' : 'cancelado',
-                  });
-                }
-                close();
-                onUpdated();
-              } catch {
-                Alert.alert('Error', 'No se pudo realizar la acción');
-              } finally {
-                setLoading(false);
-              }
-            },
-          },
-        ]);
-      },
-      [reservation, onUpdated, ref],
-    );
+    const handleConfirmAction = useCallback(async () => {
+      if (!reservation || !pendingAction) return;
+      setLoading(true);
+      try {
+        if (pendingAction === 'delete') {
+          await deleteReservation(reservation.id);
+        } else {
+          await updateReservation(reservation.id, {
+            estado: pendingAction === 'confirm' ? 'confirmada' : 'cancelado',
+          });
+        }
+        setPendingAction(null);
+        (ref as React.RefObject<BottomSheet>)?.current?.close();
+        onUpdated();
+      } catch {
+        setPendingAction(null);
+      } finally {
+        setLoading(false);
+      }
+    }, [reservation, pendingAction, onUpdated, ref]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -114,7 +98,10 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
         handleIndicatorStyle={{ backgroundColor: sheetHandle }}
         style={sheetOpen ? undefined : { zIndex: -1 }}
         onChange={handleSheetChange}
-        containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+        containerStyle={sheetOpen
+          ? { backgroundColor: 'transparent' }
+          : { pointerEvents: 'none' as const, backgroundColor: 'transparent' }
+        }
       >
         <BottomSheetScrollView
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: Math.max(safeBottom, 20) + 20 }}
@@ -203,11 +190,41 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
           {/* Actions */}
           {loading ? (
             <ActivityIndicator color={activityColor} className="mt-4" />
+          ) : pendingAction ? (
+            <LiquidView
+              intensity={15}
+              tint="dark"
+              className="rounded-2xl border border-black/10 dark:border-white/10 p-4 gap-3"
+            >
+              <Text className="text-neutral-950 dark:text-white font-semibold text-center">
+                {pendingAction === 'confirm' && '¿Confirmar esta reserva?'}
+                {pendingAction === 'cancel' && '¿Cancelar esta reserva?'}
+                {pendingAction === 'delete' && '¿Eliminar esta reserva? Esta acción no se puede deshacer.'}
+              </Text>
+              <View className="flex-row gap-3">
+                <Pressable
+                  onPress={() => setPendingAction(null)}
+                  className="flex-1 bg-black/10 dark:bg-white/10 rounded-xl py-3 items-center"
+                >
+                  <Text className="text-neutral-950 dark:text-white font-semibold">Cancelar</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleConfirmAction}
+                  className={`flex-1 rounded-xl py-3 items-center ${
+                    pendingAction === 'delete' ? 'bg-red-600' : pendingAction === 'confirm' ? 'bg-green-600' : 'bg-red-500'
+                  }`}
+                >
+                  <Text className="text-white font-bold">
+                    {pendingAction === 'confirm' ? 'Confirmar' : pendingAction === 'cancel' ? 'Cancelar reserva' : 'Eliminar'}
+                  </Text>
+                </Pressable>
+              </View>
+            </LiquidView>
           ) : (
             <View className="gap-3">
               {canConfirm && (
                 <Pressable
-                  onPress={() => handleAction('confirm')}
+                  onPress={() => setPendingAction('confirm')}
                   className="bg-green-600 rounded-2xl py-3.5 items-center"
                 >
                   <Text className="text-white font-bold">Confirmar reserva</Text>
@@ -215,7 +232,7 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
               )}
               {canCancel && (
                 <Pressable
-                  onPress={() => handleAction('cancel')}
+                  onPress={() => setPendingAction('cancel')}
                   className="bg-black/10 dark:bg-white/10 rounded-2xl py-3.5 items-center border border-red-500/30"
                 >
                   <Text className="text-red-600 dark:text-red-400 font-bold">Cancelar reserva</Text>
@@ -223,7 +240,7 @@ const ReservationDetailSheet = forwardRef<BottomSheet, Props>(
               )}
               {canDelete && (
                 <Pressable
-                  onPress={() => handleAction('delete')}
+                  onPress={() => setPendingAction('delete')}
                   className="bg-red-600/20 rounded-2xl py-3.5 items-center"
                 >
                   <Text className="text-red-400 font-bold">Eliminar</Text>

@@ -140,9 +140,8 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
     setError(null);
     try {
       await createReservation(payload);
-      resetForm();
-      (ref as React.RefObject<BottomSheet>)?.current?.close();
       onCreated();
+      (ref as React.RefObject<BottomSheet>)?.current?.close();
     } catch (e: any) {
       setError(e?.response?.data?.message || 'No se pudo crear la reserva');
     } finally {
@@ -192,7 +191,10 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
       handleIndicatorStyle={{ backgroundColor: sheetHandle }}
       style={sheetOpen ? undefined : { zIndex: -1 }}
       onChange={handleSheetChange}
-      containerStyle={sheetOpen ? undefined : { pointerEvents: 'none' as const }}
+      containerStyle={sheetOpen
+        ? { backgroundColor: 'transparent' }
+        : { pointerEvents: 'none' as const, backgroundColor: 'transparent' }
+      }
       android_keyboardInputMode="adjustResize"
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
@@ -425,7 +427,8 @@ const CreateReservationSheet = forwardRef<BottomSheet, Props>(({ onCreated }, re
               placeholder="Ej: 10"
               placeholderTextColor={isDark ? '#666' : '#a3a3a3'}
               keyboardType="number-pad"
-              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-4 text-neutral-950 dark:text-white text-lg"
+              style={{ color: isDark ? '#ffffff' : '#0a0a0a' }}
+              className="bg-black/10 dark:bg-white/10 rounded-xl px-4 py-4 text-lg"
             />
             <Pressable
               onPress={() => {
